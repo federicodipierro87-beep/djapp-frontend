@@ -22,7 +22,7 @@ const DonationSlider: React.FC<DonationSliderProps> = ({
     <div>
       <label className="form-label flex items-center">
         <Heart className="w-4 h-4 mr-2 text-red-500" />
-        Donation Amount
+        Importo Donazione
       </label>
       
       {/* Current Amount Display */}
@@ -33,7 +33,7 @@ const DonationSlider: React.FC<DonationSliderProps> = ({
             <span className="text-3xl font-bold text-primary-800">{amount}</span>
           </div>
           <p className="text-center text-primary-600 text-sm mt-1">
-            {amount === min ? 'Minimum amount' : 'Thank you for your support!'}
+            {amount === min ? 'Importo minimo' : 'Grazie per il tuo sostegno!'}
           </p>
         </div>
       </div>
@@ -77,7 +77,7 @@ const DonationSlider: React.FC<DonationSliderProps> = ({
 
       {/* Custom Amount Input */}
       <div className="mt-4">
-        <label className="block text-sm text-gray-600 mb-2">Or enter custom amount:</label>
+        <label className="block text-sm text-gray-600 mb-2">Oppure inserisci un importo personalizzato:</label>
         <div className="relative">
           <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input

@@ -41,11 +41,11 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
     onSuccess: (response) => {
-      toast.success('Request submitted! Waiting for DJ approval...');
+      toast.success('Richiesta inviata! In attesa dell\'approvazione del DJ...');
       onSuccess();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to submit request';
+      const message = error.response?.data?.error || 'Errore nell\'invio della richiesta';
       toast.error(message);
     },
   });
@@ -54,12 +54,12 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     e.preventDefault();
     
     if (!formData.songTitle.trim() || !formData.artistName.trim() || !formData.requesterName.trim()) {
-      toast.error('Please fill in all required fields');
+      toast.error('Compila tutti i campi obbligatori');
       return;
     }
 
     if (donationAmount < (djData?.minDonation || 5)) {
-      toast.error(`Minimum donation is €${djData?.minDonation || 5}`);
+      toast.error(`Donazione minima è €${djData?.minDonation || 5}`);
       return;
     }
 
@@ -81,7 +81,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   };
 
   const paymentMethods = [
-    { id: 'CARD' as PaymentMethod, name: 'Credit/Debit Card', icon: CreditCard },
+    { id: 'CARD' as PaymentMethod, name: 'Carta di Credito/Debito', icon: CreditCard },
     { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
     { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },
     // PayPal temporarily disabled - need valid Client ID
@@ -93,7 +93,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">Request a Song</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Richiedi una Canzone</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -115,28 +115,28 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="form-label">
-                  Song Title <span className="text-red-500">*</span>
+                  Titolo Canzone <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.songTitle}
                   onChange={(e) => setFormData({ ...formData, songTitle: e.target.value })}
                   className="form-input"
-                  placeholder="Enter song title"
+                  placeholder="Inserisci titolo canzone"
                   required
                 />
               </div>
               
               <div>
                 <label className="form-label">
-                  Artist Name <span className="text-red-500">*</span>
+                  Nome Artista <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.artistName}
                   onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
                   className="form-input"
-                  placeholder="Enter artist name"
+                  placeholder="Inserisci nome artista"
                   required
                 />
               </div>
@@ -146,26 +146,26 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="form-label">
-                  Your Name <span className="text-red-500">*</span>
+                  Il Tuo Nome <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.requesterName}
                   onChange={(e) => setFormData({ ...formData, requesterName: e.target.value })}
                   className="form-input"
-                  placeholder="Enter your name"
+                  placeholder="Inserisci il tuo nome"
                   required
                 />
               </div>
               
               <div>
-                <label className="form-label">Email (Optional)</label>
+                <label className="form-label">Email (Opzionale)</label>
                 <input
                   type="email"
                   value={formData.requesterEmail}
                   onChange={(e) => setFormData({ ...formData, requesterEmail: e.target.value })}
                   className="form-input"
-                  placeholder="your@email.com"
+                  placeholder="tua@email.com"
                 />
               </div>
             </div>
@@ -182,7 +182,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
             {/* Payment Method */}
             <div>
-              <label className="form-label">Payment Method</label>
+              <label className="form-label">Metodo di Pagamento</label>
               <div className="grid grid-cols-2 gap-3">
                 {paymentMethods.map((method) => (
                   <button
@@ -206,11 +206,11 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
             {/* Important Note */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h4 className="font-medium text-yellow-800 mb-2">Important:</h4>
+              <h4 className="font-medium text-yellow-800 mb-2">Importante:</h4>
               <ul className="text-yellow-700 text-sm space-y-1">
-                <li>• You will only be charged if the DJ accepts your request</li>
-                <li>• Requests expire after 1 hour if not reviewed</li>
-                <li>• Your card will be authorized but not charged until acceptance</li>
+                <li>• Sarai addebitato solo se il DJ accetta la tua richiesta</li>
+                <li>• Le richieste scadono dopo 1 ora se non esaminate</li>
+                <li>• La tua carta sarà autorizzata ma non addebitata fino all'accettazione</li>
               </ul>
             </div>
 
@@ -221,14 +221,14 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
                 onClick={onClose}
                 className="btn-secondary flex-1"
               >
-                Cancel
+                Annulla
               </button>
               <button
                 type="submit"
                 disabled={createRequestMutation.isPending}
                 className="btn-primary flex-1"
               >
-                {createRequestMutation.isPending ? 'Submitting...' : 'Continue to Payment'}
+                {createRequestMutation.isPending ? 'Invio...' : 'Continua al Pagamento'}
               </button>
             </div>
           </form>

@@ -61,14 +61,14 @@ const DJPanel: React.FC = () => {
   const newEventMutation = useMutation({
     mutationFn: djApi.generateNewEventCode,
     onSuccess: (data) => {
-      toast.success('New event started!');
+      toast.success('Nuovo evento iniziato!');
       queryClient.invalidateQueries({ queryKey: ['dj-me'] });
       queryClient.invalidateQueries({ queryKey: ['dj-requests'] });
       queryClient.invalidateQueries({ queryKey: ['dj-queue'] });
       queryClient.invalidateQueries({ queryKey: ['dj-stats'] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to start new event';
+      const message = error.response?.data?.error || 'Errore nel creare nuovo evento';
       toast.error(message);
     },
   });
@@ -76,13 +76,13 @@ const DJPanel: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('dj_token');
     navigate('/');
-    toast.success('Logged out successfully');
+    toast.success('Disconnesso con successo');
   };
 
   const handleCopyEventCode = () => {
     if (djData?.eventCode) {
       navigator.clipboard.writeText(djData.eventCode);
-      toast.success('Event code copied to clipboard!');
+      toast.success('Codice evento copiato!');
     }
   };
 
@@ -90,7 +90,7 @@ const DJPanel: React.FC = () => {
     if (djData?.eventCode) {
       const url = `${window.location.origin}/event/${djData.eventCode}`;
       navigator.clipboard.writeText(url);
-      toast.success('Event URL copied to clipboard!');
+      toast.success('URL evento copiato!');
     }
   };
 
@@ -108,12 +108,12 @@ const DJPanel: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Accesso Negato</h1>
           <button
             onClick={() => navigate('/dj/login')}
             className="btn-primary"
           >
-            Go to Login
+            Vai al Login
           </button>
         </div>
       </div>
@@ -129,8 +129,8 @@ const DJPanel: React.FC = () => {
             <div className="flex items-center">
               <Music className="w-8 h-8 text-primary-600 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">DJ Dashboard</h1>
-                <p className="text-gray-600">Welcome back, {djData.name}</p>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard DJ</h1>
+                <p className="text-gray-600">Bentornato, {djData.name}</p>
               </div>
             </div>
 
@@ -140,13 +140,13 @@ const DJPanel: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <QrCode className="w-5 h-5 text-primary-600" />
                   <div>
-                    <p className="text-xs text-primary-600 font-medium">Event Code</p>
+                    <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-lg text-primary-800">{djData.eventCode}</span>
                       <button
                         onClick={handleCopyEventCode}
                         className="p-1 hover:bg-primary-100 rounded transition-colors"
-                        title="Copy event code"
+                        title="Copia codice evento"
                       >
                         <Copy className="w-4 h-4 text-primary-600" />
                       </button>
@@ -161,7 +161,7 @@ const DJPanel: React.FC = () => {
                 className="btn-secondary flex items-center"
               >
                 <Copy className="w-4 h-4 mr-2" />
-                Copy Event URL
+                Copia URL Evento
               </button>
 
               <button
@@ -170,7 +170,7 @@ const DJPanel: React.FC = () => {
                 className="btn-primary flex items-center"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                {newEventMutation.isPending ? 'Starting...' : 'New Event'}
+                {newEventMutation.isPending ? 'Avvio...' : 'Nuovo Evento'}
               </button>
 
               <button
@@ -178,7 +178,7 @@ const DJPanel: React.FC = () => {
                 className="btn-secondary flex items-center"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                Esci
               </button>
             </div>
           </div>
@@ -193,7 +193,7 @@ const DJPanel: React.FC = () => {
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-blue-600 mr-2" />
                 <div>
-                  <p className="text-sm text-blue-600">Pending</p>
+                  <p className="text-sm text-blue-600">In Attesa</p>
                   <p className="text-xl font-bold text-blue-800">{pendingRequests.length}</p>
                 </div>
               </div>
@@ -203,7 +203,7 @@ const DJPanel: React.FC = () => {
               <div className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
                 <div>
-                  <p className="text-sm text-green-600">Accepted</p>
+                  <p className="text-sm text-green-600">Accettate</p>
                   <p className="text-xl font-bold text-green-800">{stats?.acceptedRequests || 0}</p>
                 </div>
               </div>
@@ -213,7 +213,7 @@ const DJPanel: React.FC = () => {
               <div className="flex items-center">
                 <Music className="w-5 h-5 text-purple-600 mr-2" />
                 <div>
-                  <p className="text-sm text-purple-600">In Queue</p>
+                  <p className="text-sm text-purple-600">In Coda</p>
                   <p className="text-xl font-bold text-purple-800">{queueData?.queue.length || 0}</p>
                 </div>
               </div>
@@ -223,7 +223,7 @@ const DJPanel: React.FC = () => {
               <div className="flex items-center">
                 <Users className="w-5 h-5 text-yellow-600 mr-2" />
                 <div>
-                  <p className="text-sm text-yellow-600">Total Requests</p>
+                  <p className="text-sm text-yellow-600">Richieste Totali</p>
                   <p className="text-xl font-bold text-yellow-800">{stats?.totalRequests || 0}</p>
                 </div>
               </div>
@@ -233,7 +233,7 @@ const DJPanel: React.FC = () => {
               <div className="flex items-center">
                 <Euro className="w-5 h-5 text-emerald-600 mr-2" />
                 <div>
-                  <p className="text-sm text-emerald-600">Earnings</p>
+                  <p className="text-sm text-emerald-600">Guadagni</p>
                   <p className="text-xl font-bold text-emerald-800">€{queueData?.totalEarnings || 0}</p>
                 </div>
               </div>
@@ -254,7 +254,7 @@ const DJPanel: React.FC = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Pending Requests
+              Richieste in Attesa
               {pendingRequests.length > 0 && (
                 <span className="ml-2 bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">
                   {pendingRequests.length}
@@ -270,7 +270,7 @@ const DJPanel: React.FC = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Song Queue
+              Coda Canzoni
               {queueData && queueData.queue.length > 0 && (
                 <span className="ml-2 bg-primary-100 text-primary-800 text-xs font-bold px-2 py-1 rounded-full">
                   {queueData.queue.length}
@@ -286,7 +286,7 @@ const DJPanel: React.FC = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Settings
+              Impostazioni
             </button>
           </div>
         </div>
