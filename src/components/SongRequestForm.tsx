@@ -84,7 +84,8 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     { id: 'CARD' as PaymentMethod, name: 'Credit/Debit Card', icon: CreditCard },
     { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
     { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },
-    { id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: CreditCard },
+    // PayPal temporarily disabled - need valid Client ID
+    // { id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: CreditCard },
   ];
 
   return (
