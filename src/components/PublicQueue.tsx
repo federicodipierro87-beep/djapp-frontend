@@ -28,15 +28,15 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
   };
 
   const getStatusText = (status: string, isNowPlaying: boolean) => {
-    if (isNowPlaying) return 'Now Playing';
+    if (isNowPlaying) return 'In Riproduzione';
     
     switch (status) {
       case 'WAITING':
-        return 'In Queue';
+        return 'In Coda';
       case 'PLAYED':
-        return 'Played';
+        return 'Riprodotta';
       case 'SKIPPED':
-        return 'Skipped';
+        return 'Saltata';
       default:
         return status;
     }
@@ -46,8 +46,8 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
     return (
       <div className="card text-center py-12">
         <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No songs in queue yet</h3>
-        <p className="text-gray-600">Be the first to request a song!</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Nessuna canzone in coda</h3>
+        <p className="text-gray-600">Sii il primo a richiedere una canzone!</p>
       </div>
     );
   }
@@ -59,7 +59,7 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <Music className="w-5 h-5 mr-2 text-primary-600" />
-            Current Queue ({waitingQueue.length})
+            Coda Attuale ({waitingQueue.length})
           </h2>
           
           <div className="space-y-3">
@@ -85,8 +85,8 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
                     
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.songTitle}</h3>
-                      <p className="text-gray-600">by {item.artistName}</p>
-                      <p className="text-sm text-gray-500">Requested by {item.requesterName}</p>
+                      <p className="text-gray-600">di {item.artistName}</p>
+                      <p className="text-sm text-gray-500">Richiesta da {item.requesterName}</p>
                     </div>
                   </div>
                   
@@ -102,7 +102,7 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
                   <div className="mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
                     <div className="flex items-center">
                       <div className="animate-pulse w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-green-800 font-medium">This song is currently playing!</span>
+                      <span className="text-green-800 font-medium">Questa canzone è in riproduzione!</span>
                     </div>
                   </div>
                 )}
@@ -117,7 +117,7 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-            Recently Played ({playedSongs.length})
+            Riprodotte di Recente ({playedSongs.length})
           </h2>
           
           <div className="space-y-3">
@@ -131,8 +131,8 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
                     
                     <div>
                       <h3 className="font-medium text-gray-700">{item.songTitle}</h3>
-                      <p className="text-sm text-gray-500">by {item.artistName}</p>
-                      <p className="text-xs text-gray-400">Requested by {item.requesterName}</p>
+                      <p className="text-sm text-gray-500">di {item.artistName}</p>
+                      <p className="text-xs text-gray-400">Richiesta da {item.requesterName}</p>
                     </div>
                   </div>
                   

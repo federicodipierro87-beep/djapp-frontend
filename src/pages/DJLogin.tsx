@@ -20,11 +20,11 @@ const DJLogin: React.FC = () => {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       localStorage.setItem('dj_token', data.token);
-      toast.success('Login successful!');
+      toast.success('Accesso effettuato con successo!');
       navigate('/dj/panel');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Login failed';
+      const message = error.response?.data?.error || 'Accesso fallito';
       toast.error(message);
     },
   });
@@ -33,11 +33,11 @@ const DJLogin: React.FC = () => {
     mutationFn: authApi.register,
     onSuccess: (data) => {
       localStorage.setItem('dj_token', data.token);
-      toast.success('Registration successful!');
+      toast.success('Registrazione completata!');
       navigate('/dj/panel');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Registration failed';
+      const message = error.response?.data?.error || 'Registrazione fallita';
       toast.error(message);
     },
   });
@@ -46,12 +46,12 @@ const DJLogin: React.FC = () => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
-      toast.error('Please fill in all required fields');
+      toast.error('Compila tutti i campi obbligatori');
       return;
     }
 
     if (!isLogin && !formData.name) {
-      toast.error('Please enter your name');
+      toast.error('Inserisci il tuo nome');
       return;
     }
 
@@ -89,7 +89,7 @@ const DJLogin: React.FC = () => {
               className="flex items-center text-white/80 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              Torna alla Home
             </button>
           </div>
 
@@ -101,10 +101,10 @@ const DJLogin: React.FC = () => {
                 <Music className="w-12 h-12 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">
-                {isLogin ? 'Welcome Back' : 'Join as DJ'}
+                {isLogin ? 'Bentornato' : 'Registrati come DJ'}
               </h1>
               <p className="text-purple-100">
-                {isLogin ? 'Sign in to your DJ dashboard' : 'Create your DJ account'}
+                {isLogin ? 'Accedi alla tua dashboard DJ' : 'Crea il tuo account DJ'}
               </p>
             </div>
 
@@ -113,14 +113,14 @@ const DJLogin: React.FC = () => {
               {!isLogin && (
                 <div>
                   <label className="block text-purple-100 text-sm font-medium mb-2">
-                    DJ Name
+                    Nome DJ
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-transparent"
-                    placeholder="Enter your DJ name"
+                    placeholder="Inserisci il tuo nome DJ"
                     required={!isLogin}
                   />
                 </div>
@@ -128,7 +128,7 @@ const DJLogin: React.FC = () => {
 
               <div>
                 <label className="block text-purple-100 text-sm font-medium mb-2">
-                  Email Address
+                  Indirizzo Email
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-200" />
@@ -137,7 +137,7 @@ const DJLogin: React.FC = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full pl-12 pr-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-transparent"
-                    placeholder="your@email.com"
+                    placeholder="tua@email.com"
                     required
                   />
                 </div>
@@ -154,7 +154,7 @@ const DJLogin: React.FC = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="w-full pl-12 pr-12 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-transparent"
-                    placeholder="Enter your password"
+                    placeholder="Inserisci la tua password"
                     required
                     minLength={6}
                   />
@@ -168,7 +168,7 @@ const DJLogin: React.FC = () => {
                 </div>
                 {!isLogin && (
                   <p className="text-purple-200 text-xs mt-1">
-                    Password must be at least 6 characters
+                    La password deve essere di almeno 6 caratteri
                   </p>
                 )}
               </div>
@@ -178,7 +178,7 @@ const DJLogin: React.FC = () => {
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:transform-none"
               >
-                {isLoading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+                {isLoading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Crea Account')}
               </button>
             </form>
 
@@ -191,7 +191,7 @@ const DJLogin: React.FC = () => {
                 }}
                 className="text-purple-200 hover:text-white transition-colors underline decoration-dotted underline-offset-4"
               >
-                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                {isLogin ? "Non hai un account? Registrati" : 'Hai già un account? Accedi'}
               </button>
             </div>
           </div>

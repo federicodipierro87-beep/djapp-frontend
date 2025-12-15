@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventCode.trim()) {
-      toast.error('Please enter an event code');
+      toast.error('Inserisci un codice evento');
       return;
     }
     navigate(`/event/${eventCode.trim().toUpperCase()}`);
@@ -38,44 +38,44 @@ const Home: React.FC = () => {
             </div>
             
             <h1 className="text-6xl font-bold text-white mb-6 text-balance">
-              Request Your
-              <span className="text-yellow-300 block">Favorite Songs</span>
+              Richiedi le Tue
+              <span className="text-yellow-300 block">Canzoni Preferite</span>
             </h1>
             
             <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto text-balance">
-              Connect with your DJ and request songs during live events. 
-              Support them with donations and see your requests come to life!
+              Connettiti con il tuo DJ e richiedi canzoni durante eventi live. 
+              Sostienilo con donazioni e guarda le tue richieste prendere vita!
             </p>
 
             {/* Features */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
                 <Search className="w-8 h-8 text-yellow-300 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Easy Requests</h3>
-                <p className="text-purple-100 text-sm">Search and request any song with just a few clicks</p>
+                <h3 className="font-semibold text-white mb-2">Richieste Facili</h3>
+                <p className="text-purple-100 text-sm">Cerca e richiedi qualsiasi canzone con pochi click</p>
               </div>
               
               <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
                 <Heart className="w-8 h-8 text-red-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Support DJs</h3>
-                <p className="text-purple-100 text-sm">Show appreciation with secure donations</p>
+                <h3 className="font-semibold text-white mb-2">Sostieni i DJ</h3>
+                <p className="text-purple-100 text-sm">Mostra apprezzamento con donazioni sicure</p>
               </div>
               
               <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20">
                 <Music className="w-8 h-8 text-green-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Live Queue</h3>
-                <p className="text-purple-100 text-sm">Watch the queue and see when your song plays</p>
+                <h3 className="font-semibold text-white mb-2">Coda Live</h3>
+                <p className="text-purple-100 text-sm">Guarda la coda e vedi quando suona la tua canzone</p>
               </div>
             </div>
 
             {/* Event Code Form */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 max-w-md mx-auto">
-              <h2 className="text-2xl font-bold text-white mb-6">Join an Event</h2>
+              <h2 className="text-2xl font-bold text-white mb-6">Unisciti a un Evento</h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-purple-100 text-sm font-medium mb-2">
-                    Enter Event Code
+                    Inserisci Codice Evento
                   </label>
                   <input
                     type="text"
@@ -91,7 +91,7 @@ const Home: React.FC = () => {
                   type="submit"
                   className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                  Join Event
+                  Entra nell'Evento
                 </button>
               </form>
             </div>
@@ -102,7 +102,7 @@ const Home: React.FC = () => {
                 onClick={() => navigate('/dj/login')}
                 className="text-purple-200 hover:text-white transition-colors duration-200 underline decoration-dotted underline-offset-4"
               >
-                Are you a DJ? Sign in here
+                Sei un DJ? Accedi qui
               </button>
             </div>
           </div>

@@ -23,12 +23,12 @@ const Event: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Event Code</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Codice Evento Non Valido</h1>
           <button
             onClick={() => navigate('/')}
             className="btn-primary"
           >
-            Go Home
+            Torna alla Home
           </button>
         </div>
       </div>
@@ -39,13 +39,13 @@ const Event: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Event Not Found</h1>
-          <p className="text-gray-600 mb-6">The event code "{eventCode}" doesn't exist or has ended.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Evento Non Trovato</h1>
+          <p className="text-gray-600 mb-6">Il codice evento "{eventCode}" non esiste o è terminato.</p>
           <button
             onClick={() => navigate('/')}
             className="btn-primary"
           >
-            Try Another Code
+            Prova un Altro Codice
           </button>
         </div>
       </div>
@@ -68,9 +68,9 @@ const Event: React.FC = () => {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center">
                   <Music className="w-6 h-6 mr-2 text-primary-600" />
-                  Event: {eventCode}
+                  Evento: {eventCode}
                 </h1>
-                <p className="text-gray-600">Request songs and see the live queue</p>
+                <p className="text-gray-600">Richiedi canzoni e guarda la coda live</p>
               </div>
             </div>
 
@@ -79,7 +79,7 @@ const Event: React.FC = () => {
               className="btn-primary flex items-center"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Request Song
+              Richiedi Canzone
             </button>
           </div>
         </div>
@@ -106,12 +106,12 @@ const Event: React.FC = () => {
 
             {/* Instructions */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-              <h2 className="text-lg font-semibold text-blue-900 mb-2">How it works</h2>
+              <h2 className="text-lg font-semibold text-blue-900 mb-2">Come funziona</h2>
               <ol className="text-blue-800 space-y-1">
-                <li>1. Click "Request Song" to submit a song with a donation</li>
-                <li>2. The DJ will review your request and accept or decline it</li>
-                <li>3. If accepted, your song enters the queue and you'll be charged</li>
-                <li>4. Watch the live queue below to see when your song plays!</li>
+                <li>1. Clicca "Richiedi Canzone" per inviare una canzone con una donazione</li>
+                <li>2. Il DJ esaminerà la tua richiesta e la accetterà o rifiuterà</li>
+                <li>3. Se accettata, la tua canzone entra in coda e verrai addebitato</li>
+                <li>4. Guarda la coda live qui sotto per vedere quando suona la tua canzone!</li>
               </ol>
             </div>
 
