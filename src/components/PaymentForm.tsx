@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useElements, useStripe, CardElement } from '@stripe/react-stripe-js';
 import { PayPalButtons } from '@paypal/react-paypal-js';
-import { CreditCard, Smartphone, AlertCircle } from 'lucide-react';
+import { Smartphone, AlertCircle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
 import { paymentApi } from '../services/api';
 import type { PaymentMethod } from '../types';
 
@@ -90,13 +89,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         throw new Error('Failed to create payment intent');
       }
 
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        clientSecret,
+      const cardElement = elements?.getElement(CardElement);
+      
+      if (!cardElement) {
+        throw new Error('Card element not found');
+      }
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
-          type: 'card',
-          // Apple Pay will be handled by Stripe's payment request API
-        },
-        return_url: window.location.href,
+          card: cardElement,
+          billing_details: {
+            name: 'Customer'
+          }
+        }
       });
 
       if (error) {
