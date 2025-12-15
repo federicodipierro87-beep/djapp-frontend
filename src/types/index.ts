@@ -70,6 +70,7 @@ export interface CreateRequestData {
   requesterEmail?: string;
   donationAmount: number;
   paymentMethod: PaymentMethod;
+  paymentIntentId?: string;
 }
 
 export interface PaymentIntent {

@@ -9,7 +9,7 @@ import type { PaymentMethod } from '../types';
 interface PaymentFormProps {
   amount: number;
   paymentMethod: PaymentMethod;
-  onSuccess: () => void;
+  onSuccess: (paymentIntentId: string) => void;
   onCancel: () => void;
 }
 
@@ -64,7 +64,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         setPaymentError(error.message || 'Payment failed');
       } else if (paymentIntent?.status === 'requires_capture') {
         // Payment authorized successfully
-        onSuccess();
+        onSuccess(paymentIntent.id);
       }
     } catch (error: any) {
       setPaymentError(error.message || 'Payment failed');
@@ -107,7 +107,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       if (error) {
         setPaymentError(error.message || 'Payment failed');
       } else if (paymentIntent?.status === 'requires_capture') {
-        onSuccess();
+        onSuccess(paymentIntent.id);
       }
     } catch (error: any) {
       setPaymentError(error.message || 'Payment failed');
@@ -189,7 +189,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               }}
               onApprove={async (data) => {
                 // PayPal payment approved (authorized)
-                onSuccess();
+                onSuccess(data.orderID);
               }}
               onError={(error) => {
                 console.error('PayPal error:', error);

@@ -66,7 +66,8 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     setShowPaymentForm(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (paymentIntentId: string) => {
+    // Payment completed successfully, now create the request
     const requestData: CreateRequestData = {
       eventCode,
       songTitle: formData.songTitle,
@@ -75,9 +76,11 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       requesterEmail: formData.requesterEmail || undefined,
       donationAmount,
       paymentMethod,
+      paymentIntentId // Add the confirmed PaymentIntent ID
     };
 
     createRequestMutation.mutate(requestData);
+    setShowPaymentForm(false);
   };
 
   const paymentMethods = [
