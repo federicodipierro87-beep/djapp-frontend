@@ -5,6 +5,7 @@ import type {
   QueueItem, 
   PublicQueueItem, 
   EventStats, 
+  EventSummary,
   CreateRequestData, 
   AuthResponse,
   PaymentIntent
@@ -132,6 +133,14 @@ export const djApi = {
 
   generateNewEventCode: async (): Promise<{ message: string; eventCode: string; eventUrl: string }> => {
     const response = await api.post('/dj/event/new');
+    return response.data;
+  },
+  endCurrentEvent: async (): Promise<{ message: string; summary: any }> => {
+    const response = await api.post('/dj/event/end');
+    return response.data;
+  },
+  getEventSummaries: async (): Promise<EventSummary[]> => {
+    const response = await api.get('/dj/event/summaries');
     return response.data;
   },
 

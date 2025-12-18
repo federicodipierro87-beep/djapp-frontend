@@ -62,6 +62,22 @@ export interface EventStats {
   totalEarnings: number;
 }
 
+export interface EventSummary {
+  id: string;
+  djId: string;
+  eventCode: string;
+  totalRequests: number;
+  acceptedRequests: number;
+  rejectedRequests: number;
+  expiredRequests: number;
+  playedSongs: number;
+  skippedSongs: number;
+  totalEarnings: number;
+  startedAt: string;
+  endedAt: string;
+  createdAt: string;
+}
+
 export interface CreateRequestData {
   eventCode: string;
   songTitle: string;
