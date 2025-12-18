@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
@@ -11,6 +11,7 @@ interface DJSettingsProps {
 }
 
 const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: dj.name,
     minDonation: dj.minDonation,
@@ -64,7 +65,8 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     onSuccess: (data) => {
       toast.success('Evento terminato! Riassunto salvato negli insights.');
       onUpdate();
-      refetchSummaries();
+      // Invalida la cache degli insights per aggiornare la lista
+      queryClient.invalidateQueries({ queryKey: ['eventSummaries', dj.id] });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Failed to end event';
@@ -72,7 +74,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     },
   });
 
-  const { data: eventSummaries, isLoading: summariesLoading, refetch: refetchSummaries } = useQuery({
+  const { data: eventSummaries, isLoading: summariesLoading } = useQuery({
     queryKey: ['eventSummaries', dj.id],
     queryFn: djApi.getEventSummaries,
   });
@@ -81,7 +83,8 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     mutationFn: djApi.deleteEventSummary,
     onSuccess: () => {
       toast.success('Insight evento cancellato!');
-      refetchSummaries();
+      // Invalida la cache e forza il refetch
+      queryClient.invalidateQueries({ queryKey: ['eventSummaries', dj.id] });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Failed to delete event summary';
