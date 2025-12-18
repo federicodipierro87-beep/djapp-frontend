@@ -5,13 +5,20 @@ import toast from 'react-hot-toast';
 
 // Alien DJ Icon using real 👽 emoji with headphones overlay
 const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
-  <div className={`relative inline-block ${className}`} style={style}>
-    {/* Real 👽 emoji */}
-    <span className="text-green-400" style={{ fontSize: '1em', lineHeight: 1 }}>
+  <div className={`relative inline-flex items-center justify-center ${className}`} style={style}>
+    {/* Real 👽 emoji - much bigger */}
+    <span 
+      className="text-green-400" 
+      style={{ 
+        fontSize: '4em', 
+        lineHeight: 1,
+        textShadow: '0 0 20px rgba(34, 197, 94, 0.5)'
+      }}
+    >
       👽
     </span>
     
-    {/* Headphones overlay */}
+    {/* Headphones overlay - scaled to match bigger emoji */}
     <svg
       className="absolute inset-0 w-full h-full"
       viewBox="0 0 100 100"
@@ -21,53 +28,71 @@ const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }>
     >
       {/* Headphones Band */}
       <path
-        d="M15 45C15 30 30 20 50 20C70 20 85 30 85 45"
+        d="M12 45C12 25 28 15 50 15C72 15 88 25 88 45"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.95"
+      />
+      
+      {/* Left Headphone Cup - bigger */}
+      <circle cx="12" cy="50" r="12" fill="currentColor" opacity="0.95" />
+      <circle cx="12" cy="50" r="8" fill="black" opacity="0.4" />
+      <circle cx="12" cy="50" r="4" fill="currentColor" opacity="0.8" />
+      
+      {/* Right Headphone Cup - bigger */}
+      <circle cx="88" cy="50" r="12" fill="currentColor" opacity="0.95" />
+      <circle cx="88" cy="50" r="8" fill="black" opacity="0.4" />
+      <circle cx="88" cy="50" r="4" fill="currentColor" opacity="0.8" />
+      
+      {/* Sound waves - more prominent */}
+      <path
+        d="M22 40C24 37 26 40 24 43"
         stroke="currentColor"
         strokeWidth="3"
         fill="none"
-        strokeLinecap="round"
-        opacity="0.9"
-      />
-      
-      {/* Left Headphone Cup */}
-      <circle cx="15" cy="50" r="10" fill="currentColor" opacity="0.9" />
-      <circle cx="15" cy="50" r="6" fill="black" opacity="0.3" />
-      
-      {/* Right Headphone Cup */}
-      <circle cx="85" cy="50" r="10" fill="currentColor" opacity="0.9" />
-      <circle cx="85" cy="50" r="6" fill="black" opacity="0.3" />
-      
-      {/* Sound waves */}
-      <path
-        d="M25 45C27 42 29 45 27 48"
-        stroke="currentColor"
-        strokeWidth="2"
-        fill="none"
-        opacity="0.7"
+        opacity="0.8"
         strokeLinecap="round"
       />
       <path
-        d="M23 50C25 47 27 50 25 53"
+        d="M20 45C22 42 24 45 22 48"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.5"
         fill="none"
-        opacity="0.5"
+        opacity="0.6"
         strokeLinecap="round"
       />
       <path
-        d="M75 45C73 42 71 45 73 48"
+        d="M18 50C20 47 22 50 20 53"
         stroke="currentColor"
         strokeWidth="2"
         fill="none"
-        opacity="0.7"
+        opacity="0.4"
         strokeLinecap="round"
       />
       <path
-        d="M77 50C75 47 73 50 75 53"
+        d="M78 40C76 37 74 40 76 43"
+        stroke="currentColor"
+        strokeWidth="3"
+        fill="none"
+        opacity="0.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M80 45C78 42 76 45 78 48"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        fill="none"
+        opacity="0.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M82 50C80 47 78 50 80 53"
         stroke="currentColor"
         strokeWidth="2"
         fill="none"
-        opacity="0.5"
+        opacity="0.4"
         strokeLinecap="round"
       />
     </svg>
