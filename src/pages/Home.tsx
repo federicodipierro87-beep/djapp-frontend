@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Music, Heart, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Custom Alien DJ Icon Component - styled like 👽 emoji
+// Custom Alien DJ Icon Component - exact 👽 emoji style
 const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
   <svg
     className={className}
@@ -12,75 +12,54 @@ const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }>
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* Headphones Band */}
+    {/* Headphones Band - thinner and more subtle */}
     <path
-      d="M15 45C15 25 30 15 50 15C70 15 85 25 85 45V50"
+      d="M18 50C18 30 32 20 50 20C68 20 82 30 82 50"
       stroke="currentColor"
-      strokeWidth="4"
+      strokeWidth="2.5"
       fill="none"
       strokeLinecap="round"
+      opacity="0.8"
     />
     
-    {/* Left Headphone Cup */}
-    <ellipse cx="12" cy="50" rx="8" ry="12" fill="currentColor" opacity="0.9" />
-    <ellipse cx="12" cy="50" rx="5" ry="9" fill="black" opacity="0.3" />
+    {/* Left Headphone Cup - smaller */}
+    <circle cx="18" cy="52" r="6" fill="currentColor" opacity="0.85" />
+    <circle cx="18" cy="52" r="3" fill="black" opacity="0.4" />
     
-    {/* Right Headphone Cup */}
-    <ellipse cx="88" cy="50" rx="8" ry="12" fill="currentColor" opacity="0.9" />
-    <ellipse cx="88" cy="50" rx="5" ry="9" fill="black" opacity="0.3" />
+    {/* Right Headphone Cup - smaller */}
+    <circle cx="82" cy="52" r="6" fill="currentColor" opacity="0.85" />
+    <circle cx="82" cy="52" r="3" fill="black" opacity="0.4" />
     
-    {/* Classic Alien Head - Large and Teardrop Shaped */}
+    {/* Classic 👽 Head - Perfect emoji proportions */}
+    <ellipse cx="50" cy="55" rx="28" ry="35" fill="currentColor" opacity="0.98" />
+    
+    {/* Massive Black Eyes - Exactly like 👽 */}
+    <ellipse cx="40" cy="52" rx="12" ry="18" fill="black" />
+    <ellipse cx="60" cy="52" rx="12" ry="18" fill="black" />
+    
+    {/* Simple eye highlights */}
+    <ellipse cx="42" cy="47" rx="4" ry="6" fill="white" opacity="0.9" />
+    <ellipse cx="62" cy="47" rx="4" ry="6" fill="white" opacity="0.9" />
+    <circle cx="43" cy="49" r="1.5" fill="white" />
+    <circle cx="63" cy="49" r="1.5" fill="white" />
+    
+    {/* No nose - exactly like 👽 emoji */}
+    
+    {/* Subtle sound waves */}
     <path
-      d="M50 85C65 85 75 75 75 60C75 45 70 35 65 30C60 20 55 15 50 15C45 15 40 20 35 30C30 35 25 45 25 60C25 75 35 85 50 85Z"
-      fill="currentColor"
-      opacity="0.95"
-    />
-    
-    {/* Very Large Black Eyes - Classic 👽 Style */}
-    <ellipse cx="42" cy="55" rx="10" ry="15" fill="black" />
-    <ellipse cx="58" cy="55" rx="10" ry="15" fill="black" />
-    
-    {/* Eye Highlights */}
-    <ellipse cx="45" cy="50" rx="3" ry="4" fill="white" opacity="0.9" />
-    <ellipse cx="61" cy="50" rx="3" ry="4" fill="white" opacity="0.9" />
-    <circle cx="46" cy="52" r="1" fill="white" />
-    <circle cx="62" cy="52" r="1" fill="white" />
-    
-    {/* Minimal Nose - Just Small Dots */}
-    <circle cx="49" cy="65" r="0.8" fill="black" opacity="0.4" />
-    <circle cx="51" cy="65" r="0.8" fill="black" opacity="0.4" />
-    
-    {/* Sound Waves from Headphones */}
-    <path
-      d="M20 45C22 42 24 45 22 48C20 45 20 45 20 45"
+      d="M25 50C26 48 27 50 26 52"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       fill="none"
-      opacity="0.6"
+      opacity="0.5"
       strokeLinecap="round"
     />
     <path
-      d="M18 50C20 47 22 50 20 53C18 50 18 50 18 50"
+      d="M75 50C74 48 73 50 74 52"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       fill="none"
-      opacity="0.4"
-      strokeLinecap="round"
-    />
-    <path
-      d="M80 45C78 42 76 45 78 48C80 45 80 45 80 45"
-      stroke="currentColor"
-      strokeWidth="2"
-      fill="none"
-      opacity="0.6"
-      strokeLinecap="round"
-    />
-    <path
-      d="M82 50C80 47 78 50 80 53C82 50 82 50 82 50"
-      stroke="currentColor"
-      strokeWidth="2"
-      fill="none"
-      opacity="0.4"
+      opacity="0.5"
       strokeLinecap="round"
     />
   </svg>
