@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { X, CreditCard, Smartphone } from 'lucide-react';
+import { X, CreditCard, Smartphone, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { requestsApi, djApi } from '../services/api';
 import PaymentForm from './PaymentForm';
@@ -85,10 +85,10 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
   const paymentMethods = [
     { id: 'CARD' as PaymentMethod, name: 'Carta di Credito/Debito', icon: CreditCard },
+    { id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: DollarSign },
+    { id: 'SATISPAY' as PaymentMethod, name: 'Satispay', icon: Smartphone },
     { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
     { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },
-    // PayPal temporarily disabled - need valid Client ID
-    // { id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: CreditCard },
   ];
 
   return (
@@ -186,7 +186,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             {/* Payment Method */}
             <div>
               <label className="form-label">Metodo di Pagamento</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {paymentMethods.map((method) => (
                   <button
                     key={method.id}
