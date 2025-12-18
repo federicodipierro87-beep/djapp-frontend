@@ -125,7 +125,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       case 'CARD':
         return (
           <div className="space-y-4">
-            <div className="p-4 border border-gray-300 rounded-lg">
+            <div className="p-4 border border-gray-300 rounded-lg" role="group" aria-label="Informazioni pagamento carta">
+              <label htmlFor="card-element" className="sr-only">
+                Inserisci i dati della tua carta di credito o debito
+              </label>
               <CardElement
                 options={{
                   style: {
@@ -137,6 +140,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                       },
                     },
                   },
+                  hidePostalCode: false,
                 }}
               />
             </div>
@@ -145,8 +149,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               onClick={handleStripePayment}
               disabled={isProcessing || !stripe}
               className="btn-primary w-full"
+              aria-describedby="payment-info"
+              aria-label={`Autorizza pagamento di ${amount} euro con carta di credito`}
             >
-              {isProcessing ? 'Processing...' : `Authorize €${amount}`}
+              {isProcessing ? 'Elaborazione...' : `Autorizza €${amount}`}
             </button>
           </div>
         );
@@ -276,13 +282,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {renderPaymentInterface()}
 
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h4 className="font-medium text-gray-900 mb-2">Important Information:</h4>
+      <div id="payment-info" className="mt-6 p-4 bg-gray-50 rounded-lg">
+        <h4 className="font-medium text-gray-900 mb-2">Informazioni Importanti:</h4>
         <ul className="text-gray-700 text-sm space-y-1">
-          <li>• Your payment will only be processed if the DJ accepts your request</li>
-          <li>• This is an authorization - no charge until acceptance</li>
-          <li>• Requests expire after 1 hour</li>
-          <li>• You'll receive a confirmation once the DJ decides</li>
+          <li>• Il tuo pagamento sarà processato solo se il DJ accetta la richiesta</li>
+          <li>• Questa è un'autorizzazione - nessun addebito fino all'accettazione</li>
+          <li>• Le richieste scadono dopo 1 ora</li>
+          <li>• Riceverai una conferma una volta che il DJ decide</li>
         </ul>
       </div>
 
