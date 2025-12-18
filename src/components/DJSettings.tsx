@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp } from 'lucide-react';
+import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
 import type { DJ, EventSummary } from '../types';
@@ -77,9 +77,27 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     queryFn: djApi.getEventSummaries,
   });
 
+  const deleteEventSummaryMutation = useMutation({
+    mutationFn: djApi.deleteEventSummary,
+    onSuccess: () => {
+      toast.success('Insight evento cancellato!');
+      refetchSummaries();
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Failed to delete event summary';
+      toast.error(message);
+    },
+  });
+
   const handleEndEvent = () => {
     if (window.confirm('Sei sicuro di voler terminare l\'evento corrente? Questo salverà un riassunto negli insights e svuoterà la coda, ma non creerà un nuovo evento.')) {
       endEventMutation.mutate();
+    }
+  };
+
+  const handleDeleteEventSummary = (id: string, eventCode: string) => {
+    if (window.confirm(`Sei sicuro di voler cancellare l'insight dell'evento ${eventCode}? Questa azione non può essere annullata.`)) {
+      deleteEventSummaryMutation.mutate(id);
     }
   };
 
@@ -327,9 +345,19 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center text-green-600">
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    <span className="font-semibold">€{Number(summary.totalEarnings).toFixed(2)}</span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center text-green-600">
+                      <TrendingUp className="w-4 h-4 mr-1" />
+                      <span className="font-semibold">€{Number(summary.totalEarnings).toFixed(2)}</span>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteEventSummary(summary.id, summary.eventCode)}
+                      disabled={deleteEventSummaryMutation.isPending}
+                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                      title="Cancella insight evento"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
                 

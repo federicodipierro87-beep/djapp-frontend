@@ -143,6 +143,10 @@ export const djApi = {
     const response = await api.get('/dj/event/summaries');
     return response.data;
   },
+  deleteEventSummary: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/dj/event/summaries/${id}`);
+    return response.data;
+  },
 
   getStats: async (): Promise<EventStats> => {
     const response = await api.get('/dj/stats');
