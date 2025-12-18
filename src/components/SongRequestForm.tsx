@@ -215,7 +215,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
               <h4 className="font-medium text-yellow-800 mb-2">Importante:</h4>
               <ul className="text-yellow-700 text-sm space-y-1">
                 <li>• Sarai addebitato solo se il DJ accetta la tua richiesta</li>
-                <li>• Le richieste scadono dopo 1 ora se non esaminate</li>
+                <li>• Le richieste scadono dopo 3 ore se non esaminate</li>
                 <li>• La tua carta sarà autorizzata ma non addebitata fino all'accettazione</li>
               </ul>
             </div>
