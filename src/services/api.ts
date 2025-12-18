@@ -34,6 +34,13 @@ api.interceptors.response.use(
       localStorage.removeItem('dj_token');
       window.location.href = '/dj/login';
     }
+    
+    // Gestione Rate Limiting con retry automatico
+    if (error.response?.status === 429) {
+      console.warn('Rate limit raggiunto, riprovo tra 30 secondi...');
+      // React Query gestirà automaticamente il retry con i tempi che abbiamo impostato
+    }
+    
     return Promise.reject(error);
   }
 );

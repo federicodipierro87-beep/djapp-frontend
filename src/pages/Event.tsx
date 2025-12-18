@@ -16,7 +16,7 @@ const Event: React.FC = () => {
     queryKey: ['public-queue', eventCode],
     queryFn: () => queueApi.getPublic(eventCode!),
     enabled: !!eventCode,
-    refetchInterval: 5000,
+    refetchInterval: 30000, // Ridotto da 5s a 30s per evitare rate limiting
   });
 
   if (!eventCode) {

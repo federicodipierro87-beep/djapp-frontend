@@ -43,19 +43,19 @@ const DJPanel: React.FC = () => {
   const { data: requests, refetch: refetchRequests } = useQuery({
     queryKey: ['dj-requests'],
     queryFn: requestsApi.getDJRequests,
-    refetchInterval: 5000,
+    refetchInterval: 30000, // Ridotto da 5s a 30s
   });
 
   const { data: queueData, refetch: refetchQueue } = useQuery({
     queryKey: ['dj-queue'],
     queryFn: queueApi.getDJ,
-    refetchInterval: 5000,
+    refetchInterval: 30000, // Ridotto da 5s a 30s
   });
 
   const { data: stats } = useQuery({
     queryKey: ['dj-stats'],
     queryFn: djApi.getStats,
-    refetchInterval: 10000,
+    refetchInterval: 60000, // Ridotto da 10s a 60s
   });
 
   const newEventMutation = useMutation({

@@ -14,7 +14,12 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 2,
-      staleTime: 30000,
+      staleTime: 60000, // 1 minuto
+      refetchInterval: 30000, // Solo ogni 30 secondi invece di 5
+      refetchIntervalInBackground: false, // Disabilita polling in background
+    },
+    mutations: {
+      retry: 1,
     },
   },
 })
