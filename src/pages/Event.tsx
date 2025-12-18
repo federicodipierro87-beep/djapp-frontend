@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Music, Plus, ArrowLeft } from 'lucide-react';
+import { Music, Plus, ArrowLeft, Heart } from 'lucide-react';
 import { queueApi } from '../services/api';
 import PublicQueue from '../components/PublicQueue';
 import SongRequestForm from '../components/SongRequestForm';
@@ -11,6 +11,7 @@ const Event: React.FC = () => {
   const { eventCode } = useParams<{ eventCode: string }>();
   const navigate = useNavigate();
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showDonationForm, setShowDonationForm] = useState(false);
 
   const { data: queue, isLoading, error } = useQuery({
     queryKey: ['public-queue', eventCode],
@@ -74,13 +75,22 @@ const Event: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowRequestForm(true)}
-              className="btn-primary flex items-center"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Richiedi Canzone
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRequestForm(true)}
+                className="btn-primary flex items-center"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Richiedi Canzone
+              </button>
+              <button
+                onClick={() => setShowDonationForm(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Fai una donazione
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -102,6 +112,54 @@ const Event: React.FC = () => {
                   setShowRequestForm(false);
                 }}
               />
+            )}
+
+            {/* Donation Form Modal */}
+            {showDonationForm && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                      <Heart className="w-5 h-5 text-red-600 mr-2" />
+                      Fai una donazione
+                    </h2>
+                    <button
+                      onClick={() => setShowDonationForm(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="text-center py-8">
+                    <Heart className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Supporta il DJ!
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Se ti piace la musica, fai una donazione libera per supportare il DJ.
+                    </p>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                      <p className="text-yellow-800 text-sm">
+                        <strong>Funzionalità in arrivo!</strong><br />
+                        Il sistema di donazioni sarà disponibile a breve. Per ora puoi supportare il DJ richiedendo una canzone.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowDonationForm(false);
+                        setShowRequestForm(true);
+                      }}
+                      className="btn-primary w-full flex items-center justify-center"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Richiedi Canzone Invece
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Instructions */}
