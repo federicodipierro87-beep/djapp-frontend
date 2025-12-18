@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Music, Heart, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// Custom Alien DJ Icon Component
+// Custom Alien DJ Icon Component - styled like 👽 emoji
 const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
   <svg
     className={className}
@@ -12,52 +12,76 @@ const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }>
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* Headphones */}
+    {/* Headphones Band */}
     <path
-      d="M20 35C20 20 35 10 50 10C65 10 80 20 80 35V45"
+      d="M15 45C15 25 30 15 50 15C70 15 85 25 85 45V50"
       stroke="currentColor"
-      strokeWidth="3"
+      strokeWidth="4"
       fill="none"
+      strokeLinecap="round"
     />
+    
     {/* Left Headphone Cup */}
-    <circle cx="18" cy="42" r="8" fill="currentColor" opacity="0.8" />
+    <ellipse cx="12" cy="50" rx="8" ry="12" fill="currentColor" opacity="0.9" />
+    <ellipse cx="12" cy="50" rx="5" ry="9" fill="black" opacity="0.3" />
+    
     {/* Right Headphone Cup */}
-    <circle cx="82" cy="42" r="8" fill="currentColor" opacity="0.8" />
+    <ellipse cx="88" cy="50" rx="8" ry="12" fill="currentColor" opacity="0.9" />
+    <ellipse cx="88" cy="50" rx="5" ry="9" fill="black" opacity="0.3" />
     
-    {/* Alien Head */}
-    <ellipse cx="50" cy="55" rx="25" ry="20" fill="currentColor" opacity="0.9" />
+    {/* Classic Alien Head - Large and Teardrop Shaped */}
+    <path
+      d="M50 85C65 85 75 75 75 60C75 45 70 35 65 30C60 20 55 15 50 15C45 15 40 20 35 30C30 35 25 45 25 60C25 75 35 85 50 85Z"
+      fill="currentColor"
+      opacity="0.95"
+    />
     
-    {/* Large Alien Eyes */}
-    <ellipse cx="42" cy="50" rx="6" ry="8" fill="black" />
-    <ellipse cx="58" cy="50" rx="6" ry="8" fill="black" />
+    {/* Very Large Black Eyes - Classic 👽 Style */}
+    <ellipse cx="42" cy="55" rx="10" ry="15" fill="black" />
+    <ellipse cx="58" cy="55" rx="10" ry="15" fill="black" />
     
     {/* Eye Highlights */}
-    <circle cx="44" cy="47" r="2" fill="white" />
-    <circle cx="60" cy="47" r="2" fill="white" />
+    <ellipse cx="45" cy="50" rx="3" ry="4" fill="white" opacity="0.9" />
+    <ellipse cx="61" cy="50" rx="3" ry="4" fill="white" opacity="0.9" />
+    <circle cx="46" cy="52" r="1" fill="white" />
+    <circle cx="62" cy="52" r="1" fill="white" />
     
-    {/* Small Nose */}
-    <circle cx="50" cy="58" r="1" fill="black" opacity="0.6" />
+    {/* Minimal Nose - Just Small Dots */}
+    <circle cx="49" cy="65" r="0.8" fill="black" opacity="0.4" />
+    <circle cx="51" cy="65" r="0.8" fill="black" opacity="0.4" />
     
-    {/* Antenna */}
-    <line x1="45" y1="35" x2="43" y2="25" stroke="currentColor" strokeWidth="2" />
-    <line x1="55" y1="35" x2="57" y2="25" stroke="currentColor" strokeWidth="2" />
-    <circle cx="43" cy="25" r="2" fill="currentColor" />
-    <circle cx="57" cy="25" r="2" fill="currentColor" />
-    
-    {/* Sound Waves */}
+    {/* Sound Waves from Headphones */}
     <path
-      d="M25 42C25 42 30 38 30 42C30 46 25 42 25 42"
+      d="M20 45C22 42 24 45 22 48C20 45 20 45 20 45"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="2"
       fill="none"
       opacity="0.6"
+      strokeLinecap="round"
     />
     <path
-      d="M75 42C75 42 70 38 70 42C70 46 75 42 75 42"
+      d="M18 50C20 47 22 50 20 53C18 50 18 50 18 50"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="2"
+      fill="none"
+      opacity="0.4"
+      strokeLinecap="round"
+    />
+    <path
+      d="M80 45C78 42 76 45 78 48C80 45 80 45 80 45"
+      stroke="currentColor"
+      strokeWidth="2"
       fill="none"
       opacity="0.6"
+      strokeLinecap="round"
+    />
+    <path
+      d="M82 50C80 47 78 50 80 53C82 50 82 50 82 50"
+      stroke="currentColor"
+      strokeWidth="2"
+      fill="none"
+      opacity="0.4"
+      strokeLinecap="round"
     />
   </svg>
 );
