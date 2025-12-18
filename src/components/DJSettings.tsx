@@ -333,25 +333,25 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
         ) : eventSummaries && eventSummaries.length > 0 ? (
           <div className="space-y-4">
             {eventSummaries.slice(0, 5).map((summary: EventSummary) => (
-              <div key={summary.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+              <div key={summary.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0">
+                    <span className="font-mono text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded w-fit">
                       {summary.eventCode}
                     </span>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-900">
+                    <div className="sm:ml-3">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900">
                         {new Date(summary.startedAt).toLocaleDateString('it-IT')} - {new Date(summary.endedAt).toLocaleDateString('it-IT')}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Durata evento: {Math.ceil((new Date(summary.endedAt).getTime() - new Date(summary.startedAt).getTime()) / (1000 * 60 * 60 * 24))} giorni
+                        Durata: {Math.ceil((new Date(summary.endedAt).getTime() - new Date(summary.startedAt).getTime()) / (1000 * 60 * 60 * 24))} giorni
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex items-center text-green-600">
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                      <span className="font-semibold">€{Number(summary.totalEarnings).toFixed(2)}</span>
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <span className="font-semibold text-sm sm:text-base">€{Number(summary.totalEarnings).toFixed(2)}</span>
                     </div>
                     <button
                       onClick={() => handleDeleteEventSummary(summary.id, summary.eventCode)}
@@ -359,39 +359,49 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
                       className="text-red-500 hover:text-red-700 transition-colors p-1"
                       title="Cancella insight evento"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="text-center">
-                    <p className="text-gray-600">Richieste</p>
-                    <p className="font-semibold text-lg">{summary.totalRequests}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-sm mb-3">
+                  <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-600">Richieste</p>
+                    <p className="font-semibold text-sm sm:text-lg">{summary.totalRequests}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-gray-600">Accettate</p>
-                    <p className="font-semibold text-lg text-green-600">{summary.acceptedRequests}</p>
+                  <div className="text-center bg-green-50 rounded-lg p-2 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-600">Accettate</p>
+                    <p className="font-semibold text-sm sm:text-lg text-green-600">{summary.acceptedRequests}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-gray-600">Suonate</p>
-                    <p className="font-semibold text-lg text-blue-600">{summary.playedSongs}</p>
+                  <div className="text-center bg-blue-50 rounded-lg p-2 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-600">Suonate</p>
+                    <p className="font-semibold text-sm sm:text-lg text-blue-600">{summary.playedSongs}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-gray-600">Skippate</p>
-                    <p className="font-semibold text-lg text-orange-600">{summary.skippedSongs}</p>
+                  <div className="text-center bg-orange-50 rounded-lg p-2 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-600">Skippate</p>
+                    <p className="font-semibold text-sm sm:text-lg text-orange-600">{summary.skippedSongs}</p>
                   </div>
                 </div>
                 
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="grid grid-cols-3 gap-4 text-xs text-gray-600">
-                    <div>Rifiutate: <span className="font-medium">{summary.rejectedRequests}</span></div>
-                    <div>Scadute: <span className="font-medium">{summary.expiredRequests}</span></div>
-                    <div>Chiuse: <span className="font-medium">{summary.closedRequests}</span></div>
+                <div className="pt-3 border-t border-gray-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs text-gray-600">
+                    <div className="flex justify-between sm:block">
+                      <span>Rifiutate:</span> 
+                      <span className="font-medium">{summary.rejectedRequests}</span>
+                    </div>
+                    <div className="flex justify-between sm:block">
+                      <span>Scadute:</span> 
+                      <span className="font-medium">{summary.expiredRequests}</span>
+                    </div>
+                    <div className="flex justify-between sm:block">
+                      <span>Chiuse:</span> 
+                      <span className="font-medium">{summary.closedRequests}</span>
+                    </div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-600">
-                    <div>
-                      Tasso accettazione: <span className="font-medium">
+                  <div className="mt-2 text-xs text-gray-600 text-center sm:text-left">
+                    <div className="bg-gray-50 rounded px-2 py-1 inline-block">
+                      <span>Tasso accettazione: </span>
+                      <span className="font-medium text-green-600">
                         {summary.totalRequests > 0 ? Math.round((summary.acceptedRequests / summary.totalRequests) * 100) : 0}%
                       </span>
                     </div>
