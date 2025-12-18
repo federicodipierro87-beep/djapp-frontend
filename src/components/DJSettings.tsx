@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode } from 'lucide-react';
+import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
 import type { DJ } from '../types';
@@ -59,6 +59,24 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     toast.success('Event code copied to clipboard!');
   };
 
+  const newEventMutation = useMutation({
+    mutationFn: djApi.generateNewEventCode,
+    onSuccess: () => {
+      toast.success('Nuovo evento creato! Il precedente è stato cancellato.');
+      onUpdate();
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Failed to create new event';
+      toast.error(message);
+    },
+  });
+
+  const handleNewEvent = () => {
+    if (window.confirm('Sei sicuro di voler creare un nuovo evento? Questo cancellerà l\'evento attuale, svuoterà la coda e scadrà tutte le richieste pending.')) {
+      newEventMutation.mutate();
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Event Information */}
@@ -104,6 +122,48 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
                 <Copy className="w-4 h-4 mr-1" />
                 Copy
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Event Management */}
+        <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-orange-900 mb-1">Gestione Evento</h4>
+              <p className="text-orange-700 text-sm">Crea un nuovo evento per cancellare quello attuale</p>
+            </div>
+            <button
+              onClick={handleNewEvent}
+              disabled={newEventMutation.isPending}
+              className="btn-secondary flex items-center bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+            >
+              {newEventMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Nuovo Evento
+                </>
+              )}
+            </button>
+          </div>
+          
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+            <div className="flex items-start">
+              <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-yellow-800 text-xs">
+                <strong>Attenzione:</strong> Creando un nuovo evento:
+                <ul className="mt-1 space-y-0.5 list-disc list-inside ml-2">
+                  <li>L'evento attuale verrà terminato</li>
+                  <li>La coda verrà svuotata completamente</li>
+                  <li>Tutte le richieste pending scadranno</li>
+                  <li>Riceverai un nuovo codice evento</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -236,11 +296,18 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           <div>
             <label className="block text-gray-600">Account created</label>
             <p className="font-medium text-gray-900">
               {dj.createdAt ? new Date(dj.createdAt).toLocaleDateString() : 'N/A'}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-gray-600">Evento corrente</label>
+            <p className="font-medium text-green-600">
+              {dj.eventCode} (Attivo)
             </p>
           </div>
 
