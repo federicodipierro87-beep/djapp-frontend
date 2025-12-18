@@ -34,11 +34,11 @@ const Home: React.FC = () => {
         <div className="absolute bottom-60 right-1/4 w-24 h-24 rounded-full bg-green-400/25 animate-pulse-slow shadow-lg shadow-green-400/50"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-start min-h-screen px-4 pt-8">
+      <div className="relative z-10 flex flex-col items-center justify-start min-h-screen px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8">
         {/* Event Code Form - Moved to Top */}
-        <div className="max-w-md mx-auto mb-16">
-          <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl p-8 border border-green-400/30 shadow-2xl shadow-green-400/20">
-            <h2 className="text-3xl font-bold text-green-400 mb-6 text-center">Unisciti a un Evento</h2>
+        <div className="w-full max-w-md mx-auto mb-8 sm:mb-16">
+          <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl p-4 sm:p-8 border border-green-400/30 shadow-2xl shadow-green-400/20">
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center">Unisciti a un Evento</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -50,14 +50,14 @@ const Home: React.FC = () => {
                   value={eventCode}
                   onChange={(e) => setEventCode(e.target.value.toUpperCase())}
                   placeholder="ABC123"
-                  className="w-full px-4 py-4 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-center text-xl font-bold tracking-wider shadow-lg shadow-green-400/20"
+                  className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-center text-lg sm:text-xl font-bold tracking-wider shadow-lg shadow-green-400/20"
                   maxLength={6}
                 />
               </div>
               
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-4 px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50"
+                className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-4 sm:py-4 sm:px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50"
               >
                 Entra nell'Evento
               </button>
@@ -66,50 +66,50 @@ const Home: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center mb-8">
+        <div className="w-full max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center mb-6 sm:mb-8">
             <div className="relative">
-              <Music className="w-24 h-24 text-green-400 animate-bounce-gentle drop-shadow-lg" style={{filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.5))'}} />
-              <Sparkles className="w-10 h-10 text-green-300 absolute -top-3 -right-3 animate-pulse" style={{filter: 'drop-shadow(0 0 10px rgba(134, 239, 172, 0.8))'}} />
+              <Music className="w-16 h-16 sm:w-20 md:w-24 sm:h-20 md:h-24 text-green-400 animate-bounce-gentle drop-shadow-lg" style={{filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.5))'}} />
+              <Sparkles className="w-6 h-6 sm:w-8 md:w-10 sm:h-8 md:h-10 text-green-300 absolute -top-2 -right-2 sm:-top-3 sm:-right-3 animate-pulse" style={{filter: 'drop-shadow(0 0 10px rgba(134, 239, 172, 0.8))'}} />
             </div>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold text-white mb-8 text-balance">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 sm:mb-8 text-balance px-2">
             Richiedi le Tue
             <span className="text-green-400 block" style={{textShadow: '0 0 30px rgba(34, 197, 94, 0.5)'}}>Canzoni Preferite</span>
           </h1>
           
-          <p className="text-xl text-green-100 mb-12 max-w-2xl mx-auto text-balance">
+          <p className="text-base sm:text-lg md:text-xl text-green-100 mb-8 sm:mb-12 max-w-2xl mx-auto text-balance px-4">
             Connettiti con il tuo DJ e richiedi canzoni durante eventi live. 
             Sostienilo con donazioni e guarda le tue richieste prendere vita!
           </p>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300">
-              <Search className="w-10 h-10 text-green-400 mx-auto mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))'}} />
-              <h3 className="font-bold text-green-400 mb-3 text-lg">Richieste Facili</h3>
-              <p className="text-green-100 text-sm">Cerca e richiedi qualsiasi canzone con pochi click</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12 md:mb-16 px-4">
+            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-4 sm:p-6 md:p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300">
+              <Search className="w-8 h-8 sm:w-9 md:w-10 sm:h-9 md:h-10 text-green-400 mx-auto mb-4 sm:mb-5 md:mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))'}} />
+              <h3 className="font-bold text-green-400 mb-2 sm:mb-3 text-base sm:text-lg">Richieste Facili</h3>
+              <p className="text-green-100 text-xs sm:text-sm">Cerca e richiedi qualsiasi canzone con pochi click</p>
             </div>
             
-            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300">
-              <Heart className="w-10 h-10 text-red-400 mx-auto mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(248, 113, 113, 0.5))'}} />
-              <h3 className="font-bold text-green-400 mb-3 text-lg">Sostieni i DJ</h3>
-              <p className="text-green-100 text-sm">Mostra apprezzamento con donazioni sicure</p>
+            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-4 sm:p-6 md:p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300">
+              <Heart className="w-8 h-8 sm:w-9 md:w-10 sm:h-9 md:h-10 text-red-400 mx-auto mb-4 sm:mb-5 md:mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(248, 113, 113, 0.5))'}} />
+              <h3 className="font-bold text-green-400 mb-2 sm:mb-3 text-base sm:text-lg">Sostieni i DJ</h3>
+              <p className="text-green-100 text-xs sm:text-sm">Mostra apprezzamento con donazioni sicure</p>
             </div>
             
-            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300">
-              <Music className="w-10 h-10 text-green-400 mx-auto mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))'}} />
-              <h3 className="font-bold text-green-400 mb-3 text-lg">Coda Live</h3>
-              <p className="text-green-100 text-sm">Guarda la coda e vedi quando suona la tua canzone</p>
+            <div className="bg-green-900/20 backdrop-blur-lg rounded-lg p-4 sm:p-6 md:p-8 border border-green-400/30 shadow-lg shadow-green-400/10 hover:shadow-green-400/20 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+              <Music className="w-8 h-8 sm:w-9 md:w-10 sm:h-9 md:h-10 text-green-400 mx-auto mb-4 sm:mb-5 md:mb-6" style={{filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))'}} />
+              <h3 className="font-bold text-green-400 mb-2 sm:mb-3 text-base sm:text-lg">Coda Live</h3>
+              <p className="text-green-100 text-xs sm:text-sm">Guarda la coda e vedi quando suona la tua canzone</p>
             </div>
           </div>
 
           {/* DJ Login Link */}
-          <div className="mt-12">
+          <div className="mt-8 sm:mt-12 pb-8">
             <button
               onClick={() => navigate('/dj/login')}
-              className="text-green-300 hover:text-green-400 transition-colors duration-300 underline decoration-dotted underline-offset-4 font-medium"
+              className="text-green-300 hover:text-green-400 transition-colors duration-300 underline decoration-dotted underline-offset-4 font-medium text-sm sm:text-base"
               style={{textShadow: '0 0 10px rgba(134, 239, 172, 0.3)'}}
             >
               Sei un DJ? Accedi qui
