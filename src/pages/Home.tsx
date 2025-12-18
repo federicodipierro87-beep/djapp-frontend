@@ -3,6 +3,65 @@ import { useNavigate } from 'react-router-dom';
 import { Music, Heart, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Custom Alien DJ Icon Component
+const AlienDJIcon: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
+  <svg
+    className={className}
+    style={style}
+    viewBox="0 0 100 100"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Headphones */}
+    <path
+      d="M20 35C20 20 35 10 50 10C65 10 80 20 80 35V45"
+      stroke="currentColor"
+      strokeWidth="3"
+      fill="none"
+    />
+    {/* Left Headphone Cup */}
+    <circle cx="18" cy="42" r="8" fill="currentColor" opacity="0.8" />
+    {/* Right Headphone Cup */}
+    <circle cx="82" cy="42" r="8" fill="currentColor" opacity="0.8" />
+    
+    {/* Alien Head */}
+    <ellipse cx="50" cy="55" rx="25" ry="20" fill="currentColor" opacity="0.9" />
+    
+    {/* Large Alien Eyes */}
+    <ellipse cx="42" cy="50" rx="6" ry="8" fill="black" />
+    <ellipse cx="58" cy="50" rx="6" ry="8" fill="black" />
+    
+    {/* Eye Highlights */}
+    <circle cx="44" cy="47" r="2" fill="white" />
+    <circle cx="60" cy="47" r="2" fill="white" />
+    
+    {/* Small Nose */}
+    <circle cx="50" cy="58" r="1" fill="black" opacity="0.6" />
+    
+    {/* Antenna */}
+    <line x1="45" y1="35" x2="43" y2="25" stroke="currentColor" strokeWidth="2" />
+    <line x1="55" y1="35" x2="57" y2="25" stroke="currentColor" strokeWidth="2" />
+    <circle cx="43" cy="25" r="2" fill="currentColor" />
+    <circle cx="57" cy="25" r="2" fill="currentColor" />
+    
+    {/* Sound Waves */}
+    <path
+      d="M25 42C25 42 30 38 30 42C30 46 25 42 25 42"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+      opacity="0.6"
+    />
+    <path
+      d="M75 42C75 42 70 38 70 42C70 46 75 42 75 42"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+      opacity="0.6"
+    />
+  </svg>
+);
+
 const Home: React.FC = () => {
   const [eventCode, setEventCode] = useState('');
   const navigate = useNavigate();
@@ -69,7 +128,10 @@ const Home: React.FC = () => {
         <div className="w-full max-w-4xl mx-auto text-center">
           <div className="flex items-center justify-center mb-6 sm:mb-8">
             <div className="relative">
-              <Music className="w-16 h-16 sm:w-20 md:w-24 sm:h-20 md:h-24 text-green-400 animate-bounce-gentle drop-shadow-lg" style={{filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.5))'}} />
+              <AlienDJIcon 
+                className="w-16 h-16 sm:w-20 md:w-24 sm:h-20 md:h-24 text-green-400 animate-bounce-gentle drop-shadow-lg" 
+                style={{filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.5))'}} 
+              />
               <Sparkles className="w-6 h-6 sm:w-8 md:w-10 sm:h-8 md:h-10 text-green-300 absolute -top-2 -right-2 sm:-top-3 sm:-right-3 animate-pulse" style={{filter: 'drop-shadow(0 0 10px rgba(134, 239, 172, 0.8))'}} />
             </div>
           </div>
