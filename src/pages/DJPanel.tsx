@@ -130,31 +130,31 @@ const DJPanel: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center">
-              <Music className="w-8 h-8 text-primary-600 mr-3" />
+              <Music className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mr-2 sm:mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard DJ</h1>
-                <p className="text-gray-600">Bentornato, {djData.name}</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard DJ</h1>
+                <p className="text-sm sm:text-base text-gray-600">Bentornato, {djData.name}</p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               {/* Event Code Display */}
-              <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
+              <div className="bg-primary-50 border border-primary-200 rounded-lg p-2 sm:p-3">
                 <div className="flex items-center space-x-2">
-                  <QrCode className="w-5 h-5 text-primary-600" />
+                  <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
                   <div>
                     <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-lg text-primary-800">{djData.eventCode}</span>
+                      <span className="font-bold text-base sm:text-lg text-primary-800">{djData.eventCode}</span>
                       <button
                         onClick={handleCopyEventCode}
                         className="p-1 hover:bg-primary-100 rounded transition-colors"
                         title="Copia codice evento"
                       >
-                        <Copy className="w-4 h-4 text-primary-600" />
+                        <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-primary-600" />
                       </button>
                     </div>
                   </div>
@@ -162,30 +162,35 @@ const DJPanel: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <button
-                onClick={handleCopyEventUrl}
-                className="btn-secondary flex items-center"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copia URL Evento
-              </button>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <button
+                  onClick={handleCopyEventUrl}
+                  className="btn-secondary flex items-center justify-center text-sm"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Copia URL Evento</span>
+                  <span className="sm:hidden">URL</span>
+                </button>
 
-              <button
-                onClick={handleNewEvent}
-                disabled={newEventMutation.isPending}
-                className="btn-primary flex items-center"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {newEventMutation.isPending ? 'Avvio...' : 'Nuovo Evento'}
-              </button>
+                <button
+                  onClick={handleNewEvent}
+                  disabled={newEventMutation.isPending}
+                  className="btn-primary flex items-center justify-center text-sm"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">{newEventMutation.isPending ? 'Avvio...' : 'Nuovo Evento'}</span>
+                  <span className="sm:hidden">Nuovo</span>
+                </button>
 
-              <button
-                onClick={handleLogout}
-                className="btn-secondary flex items-center"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Esci
-              </button>
+                <button
+                  onClick={handleLogout}
+                  className="btn-secondary flex items-center justify-center text-sm"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Esci</span>
+                  <span className="sm:hidden">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -193,54 +198,54 @@ const DJPanel: React.FC = () => {
 
       {/* Stats Bar */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
               <div className="flex items-center">
-                <Clock className="w-5 h-5 text-blue-600 mr-2" />
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-1 sm:mr-2" />
                 <div>
-                  <p className="text-sm text-blue-600">In Attesa</p>
-                  <p className="text-xl font-bold text-blue-800">{pendingRequests.length}</p>
+                  <p className="text-xs sm:text-sm text-blue-600">In Attesa</p>
+                  <p className="text-lg sm:text-xl font-bold text-blue-800">{pendingRequests.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-green-50 rounded-lg p-3 sm:p-4">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-1 sm:mr-2" />
                 <div>
-                  <p className="text-sm text-green-600">Accettate</p>
-                  <p className="text-xl font-bold text-green-800">{stats?.acceptedRequests || 0}</p>
+                  <p className="text-xs sm:text-sm text-green-600">Accettate</p>
+                  <p className="text-lg sm:text-xl font-bold text-green-800">{stats?.acceptedRequests || 0}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-purple-50 rounded-lg p-4">
+            <div className="bg-purple-50 rounded-lg p-3 sm:p-4 sm:col-span-1 col-span-2">
               <div className="flex items-center">
-                <Music className="w-5 h-5 text-purple-600 mr-2" />
+                <Music className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1 sm:mr-2" />
                 <div>
-                  <p className="text-sm text-purple-600">In Coda</p>
-                  <p className="text-xl font-bold text-purple-800">{queueData?.queue.length || 0}</p>
+                  <p className="text-xs sm:text-sm text-purple-600">In Coda</p>
+                  <p className="text-lg sm:text-xl font-bold text-purple-800">{queueData?.queue.length || 0}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="bg-yellow-50 rounded-lg p-3 sm:p-4">
               <div className="flex items-center">
-                <Users className="w-5 h-5 text-yellow-600 mr-2" />
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mr-1 sm:mr-2" />
                 <div>
-                  <p className="text-sm text-yellow-600">Richieste Totali</p>
-                  <p className="text-xl font-bold text-yellow-800">{stats?.totalRequests || 0}</p>
+                  <p className="text-xs sm:text-sm text-yellow-600">Richieste Totali</p>
+                  <p className="text-lg sm:text-xl font-bold text-yellow-800">{stats?.totalRequests || 0}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-emerald-50 rounded-lg p-4">
+            <div className="bg-emerald-50 rounded-lg p-3 sm:p-4">
               <div className="flex items-center">
-                <Euro className="w-5 h-5 text-emerald-600 mr-2" />
+                <Euro className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mr-1 sm:mr-2" />
                 <div>
-                  <p className="text-sm text-emerald-600">Guadagni</p>
-                  <p className="text-xl font-bold text-emerald-800">€{queueData?.totalEarnings || 0}</p>
+                  <p className="text-xs sm:text-sm text-emerald-600">Guadagni</p>
+                  <p className="text-lg sm:text-xl font-bold text-emerald-800">€{queueData?.totalEarnings || 0}</p>
                 </div>
               </div>
             </div>
@@ -250,19 +255,20 @@ const DJPanel: React.FC = () => {
 
       {/* Tabs */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex space-x-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-1 sm:space-x-8 overflow-x-auto">
             <button
               onClick={() => setActiveTab('requests')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'requests'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Richieste in Attesa
+              <span className="hidden sm:inline">Richieste in Attesa</span>
+              <span className="sm:hidden">Richieste</span>
               {pendingRequests.length > 0 && (
-                <span className="ml-2 bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">
+                <span className="ml-1 sm:ml-2 bg-red-100 text-red-800 text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                   {pendingRequests.length}
                 </span>
               )}
@@ -270,15 +276,16 @@ const DJPanel: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('queue')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'queue'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              Coda Canzoni
+              <span className="hidden sm:inline">Coda Canzoni</span>
+              <span className="sm:hidden">Coda</span>
               {queueData && queueData.queue.length > 0 && (
-                <span className="ml-2 bg-primary-100 text-primary-800 text-xs font-bold px-2 py-1 rounded-full">
+                <span className="ml-1 sm:ml-2 bg-primary-100 text-primary-800 text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                   {queueData.queue.length}
                 </span>
               )}
@@ -286,7 +293,7 @@ const DJPanel: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'settings'
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -299,7 +306,7 @@ const DJPanel: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {activeTab === 'requests' && (
           <RequestList 
             requests={pendingRequests} 
