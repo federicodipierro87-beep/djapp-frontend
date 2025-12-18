@@ -73,6 +73,12 @@ const DJPanel: React.FC = () => {
     },
   });
 
+  const handleNewEvent = () => {
+    if (window.confirm('Attenzione: l\'evento corrente verrà terminato automaticamente e verrà salvato un riassunto negli insights. Vuoi procedere con la creazione del nuovo evento?')) {
+      newEventMutation.mutate();
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('dj_token');
     navigate('/');
@@ -165,7 +171,7 @@ const DJPanel: React.FC = () => {
               </button>
 
               <button
-                onClick={() => newEventMutation.mutate()}
+                onClick={handleNewEvent}
                 disabled={newEventMutation.isPending}
                 className="btn-primary flex items-center"
               >
