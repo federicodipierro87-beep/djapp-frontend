@@ -378,7 +378,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
                   </div>
                   <div className="flex items-center text-green-600">
                     <TrendingUp className="w-4 h-4 mr-1" />
-                    <span className="font-semibold">€{summary.totalEarnings.toFixed(2)}</span>
+                    <span className="font-semibold">€{Number(summary.totalEarnings).toFixed(2)}</span>
                   </div>
                 </div>
                 

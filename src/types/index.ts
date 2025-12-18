@@ -72,7 +72,7 @@ export interface EventSummary {
   expiredRequests: number;
   playedSongs: number;
   skippedSongs: number;
-  totalEarnings: number;
+  totalEarnings: number | string; // Can be Decimal from backend
   startedAt: string;
   endedAt: string;
   createdAt: string;
