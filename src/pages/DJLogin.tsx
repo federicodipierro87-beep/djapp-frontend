@@ -117,93 +117,92 @@ const DJLogin: React.FC = () => {
             </p>
           </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <div>
-                  <label className="block text-green-200 text-sm font-medium mb-2">
-                    Nome DJ
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
-                    placeholder="Inserisci il tuo nome DJ"
-                    required={!isLogin}
-                  />
-                </div>
-              )}
-
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
               <div>
                 <label className="block text-green-200 text-sm font-medium mb-2">
-                  Indirizzo Email
+                  Nome DJ
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
-                    placeholder="tua@email.com"
-                    required
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                  placeholder="Inserisci il tuo nome DJ"
+                  required={!isLogin}
+                />
               </div>
+            )}
 
-              <div>
-                <label className="block text-green-200 text-sm font-medium mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-12 pr-12 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
-                    placeholder="Inserisci la tua password"
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-300 hover:text-green-400"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-                {!isLogin && (
-                  <p className="text-green-200 text-xs mt-1">
-                    La password deve essere di almeno 6 caratteri
-                  </p>
-                )}
+            <div>
+              <label className="block text-green-200 text-sm font-medium mb-2">
+                Indirizzo Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                  placeholder="tua@email.com"
+                  required
+                />
               </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50 disabled:opacity-50 disabled:transform-none"
-              >
-                {isLoading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Crea Account')}
-              </button>
-            </form>
-
-            {/* Toggle Login/Register */}
-            <div className="text-center mt-6">
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setFormData({ email: '', password: '', name: '' });
-                }}
-                className="text-green-300 hover:text-green-400 transition-colors underline decoration-dotted underline-offset-4 font-medium"
-                style={{textShadow: '0 0 10px rgba(134, 239, 172, 0.3)'}}
-              >
-                {isLogin ? "Non hai un account? Registrati" : 'Hai già un account? Accedi'}
-              </button>
             </div>
+
+            <div>
+              <label className="block text-green-200 text-sm font-medium mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full pl-12 pr-12 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                  placeholder="Inserisci la tua password"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-300 hover:text-green-400"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {!isLogin && (
+                <p className="text-green-200 text-xs mt-1">
+                  La password deve essere di almeno 6 caratteri
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50 disabled:opacity-50 disabled:transform-none"
+            >
+              {isLoading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Crea Account')}
+            </button>
+          </form>
+
+          {/* Toggle Login/Register */}
+          <div className="text-center mt-6">
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setFormData({ email: '', password: '', name: '' });
+              }}
+              className="text-green-300 hover:text-green-400 transition-colors underline decoration-dotted underline-offset-4 font-medium"
+              style={{textShadow: '0 0 10px rgba(134, 239, 172, 0.3)'}}
+            >
+              {isLogin ? "Non hai un account? Registrati" : 'Hai già un account? Accedi'}
+            </button>
           </div>
         </div>
       </div>
