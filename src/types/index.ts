@@ -70,6 +70,7 @@ export interface EventSummary {
   acceptedRequests: number;
   rejectedRequests: number;
   expiredRequests: number;
+  closedRequests: number;
   playedSongs: number;
   skippedSongs: number;
   totalEarnings: number | string; // Can be Decimal from backend
@@ -100,7 +101,7 @@ export interface PaymentIntent {
 
 export type PaymentMethod = 'CARD' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'PAYPAL' | 'SATISPAY';
 
-export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
+export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'CLOSED';
 
 export type QueueStatus = 'WAITING' | 'NOW_PLAYING' | 'PLAYED' | 'SKIPPED';
 

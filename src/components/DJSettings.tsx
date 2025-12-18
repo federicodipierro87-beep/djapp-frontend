@@ -356,6 +356,9 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
                   <div className="grid grid-cols-3 gap-4 text-xs text-gray-600">
                     <div>Rifiutate: <span className="font-medium">{summary.rejectedRequests}</span></div>
                     <div>Scadute: <span className="font-medium">{summary.expiredRequests}</span></div>
+                    <div>Chiuse: <span className="font-medium">{summary.closedRequests}</span></div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600">
                     <div>
                       Tasso accettazione: <span className="font-medium">
                         {summary.totalRequests > 0 ? Math.round((summary.acceptedRequests / summary.totalRequests) * 100) : 0}%
