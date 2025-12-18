@@ -240,7 +240,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
           <div>
             <label className="block text-gray-600">Account created</label>
             <p className="font-medium text-gray-900">
-              {new Date(dj.createdAt).toLocaleDateString()}
+              {dj.createdAt ? new Date(dj.createdAt).toLocaleDateString() : 'N/A'}
             </p>
           </div>
 
