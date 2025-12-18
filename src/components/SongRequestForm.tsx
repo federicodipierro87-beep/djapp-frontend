@@ -83,9 +83,12 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     setShowPaymentForm(false);
   };
 
+  const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+  const isPayPalEnabled = paypalClientId && paypalClientId !== 'your-paypal-client-id' && paypalClientId !== 'test';
+
   const paymentMethods = [
     { id: 'CARD' as PaymentMethod, name: 'Carta di Credito/Debito', icon: CreditCard },
-    { id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: DollarSign },
+    ...(isPayPalEnabled ? [{ id: 'PAYPAL' as PaymentMethod, name: 'PayPal', icon: DollarSign }] : []),
     { id: 'SATISPAY' as PaymentMethod, name: 'Satispay', icon: Smartphone },
     { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
     { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },

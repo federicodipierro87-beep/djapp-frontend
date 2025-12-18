@@ -21,8 +21,11 @@ const queryClient = new QueryClient({
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '')
 
+const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+const isPayPalEnabled = paypalClientId && paypalClientId !== 'your-paypal-client-id' && paypalClientId !== 'test';
+
 const paypalOptions = {
-  clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID || '',
+  clientId: isPayPalEnabled ? paypalClientId : 'dummy-client-id',
   currency: 'EUR',
   intent: 'authorize',
 }
