@@ -22,9 +22,12 @@ import RequestList from '../components/RequestList';
 import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
 import DJProfile from '../components/DJProfile';
+import QRCodeModal from '../components/QRCodeModal';
 
 const DJPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'settings' | 'profile'>('requests');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrData, setQrData] = useState<{ qrCode: string; eventCode: string; eventUrl: string } | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -75,6 +78,18 @@ const DJPanel: React.FC = () => {
     },
   });
 
+  const qrMutation = useMutation({
+    mutationFn: djApi.generateQRCode,
+    onSuccess: (data) => {
+      setQrData(data);
+      setShowQRModal(true);
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Errore nel generare QR Code';
+      toast.error(message);
+    },
+  });
+
   const handleNewEvent = () => {
     if (window.confirm('Attenzione: l\'evento corrente verrà terminato automaticamente e verrà salvato un riassunto negli insights. Vuoi procedere con la creazione del nuovo evento?')) {
       newEventMutation.mutate();
@@ -100,6 +115,10 @@ const DJPanel: React.FC = () => {
       navigator.clipboard.writeText(url);
       toast.success('URL evento copiato!');
     }
+  };
+
+  const handleShowQRCode = () => {
+    qrMutation.mutate();
   };
 
   const pendingRequests = requests?.filter(r => r.status === 'PENDING') || [];
@@ -146,7 +165,14 @@ const DJPanel: React.FC = () => {
               {/* Event Code Display */}
               <div className="bg-primary-50 border border-primary-200 rounded-lg p-2 sm:p-3">
                 <div className="flex items-center space-x-2">
-                  <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
+                  <button
+                    onClick={handleShowQRCode}
+                    disabled={qrMutation.isPending}
+                    className="hover:bg-primary-100 p-1 rounded transition-colors"
+                    title="Mostra QR Code"
+                  >
+                    <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
+                  </button>
                   <div>
                     <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
                     <div className="flex items-center space-x-2">
@@ -354,6 +380,17 @@ const DJPanel: React.FC = () => {
           />
         )}
       </div>
+
+      {/* QR Code Modal */}
+      {qrData && (
+        <QRCodeModal
+          isOpen={showQRModal}
+          onClose={() => setShowQRModal(false)}
+          qrCode={qrData.qrCode}
+          eventCode={qrData.eventCode}
+          eventUrl={qrData.eventUrl}
+        />
+      )}
     </div>
   );
 };

@@ -157,6 +157,11 @@ export const djApi = {
     const response = await api.post('/dj/change-password', data);
     return response.data;
   },
+
+  generateQRCode: async (): Promise<{ qrCode: string; eventCode: string; eventUrl: string }> => {
+    const response = await api.get('/dj/qr-code');
+    return response.data;
+  },
 };
 
 // Payment API
