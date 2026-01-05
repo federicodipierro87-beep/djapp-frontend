@@ -94,23 +94,23 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
   };
 
   return (
-    <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl p-6 border border-green-400/30 shadow-2xl shadow-green-400/20">
+    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
       <div className="flex items-center mb-6">
-        <User className="w-8 h-8 text-green-400 mr-3" style={{filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.5))'}} />
-        <h2 className="text-2xl font-bold text-white" style={{textShadow: '0 0 30px rgba(34, 197, 94, 0.5)'}}>
+        <User className="w-8 h-8 text-primary-600 mr-3" />
+        <h2 className="text-2xl font-bold text-gray-900">
           Il Mio Profilo
         </h2>
       </div>
 
       {/* Tabs */}
       <div className="mb-6">
-        <div className="flex space-x-1 bg-black/30 rounded-lg p-1">
+        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
               activeTab === 'profile'
-                ? 'bg-green-400 text-black shadow-lg shadow-green-400/30'
-                : 'text-green-200 hover:text-green-100'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Informazioni Personali
@@ -119,8 +119,8 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
             onClick={() => setActiveTab('password')}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
               activeTab === 'password'
-                ? 'bg-green-400 text-black shadow-lg shadow-green-400/30'
-                : 'text-green-200 hover:text-green-100'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Cambia Password
@@ -132,14 +132,14 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
       {activeTab === 'profile' && (
         <form onSubmit={handleProfileSubmit} className="space-y-4">
           <div>
-            <label className="block text-green-200 text-sm font-medium mb-2">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
               Nome DJ *
             </label>
             <input
               type="text"
               value={profileData.name}
               onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-              className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Il tuo nome DJ"
               required
             />
@@ -147,41 +147,41 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-green-200 text-sm font-medium mb-2">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Nome
               </label>
               <input
                 type="text"
                 value={profileData.firstName}
                 onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Il tuo nome"
               />
             </div>
 
             <div>
-              <label className="block text-green-200 text-sm font-medium mb-2">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Cognome
               </label>
               <input
                 type="text"
                 value={profileData.lastName}
                 onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Il tuo cognome"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-green-200 text-sm font-medium mb-2">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
               Indirizzo
             </label>
             <textarea
               value={profileData.address}
               onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
               rows={3}
-              className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
               placeholder="Il tuo indirizzo completo"
             />
           </div>
@@ -190,7 +190,7 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
             <button
               type="submit"
               disabled={profileMutation.isPending}
-              className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50 disabled:opacity-50 disabled:transform-none flex items-center justify-center"
+              className="w-full btn-primary flex items-center justify-center"
             >
               <Save className="w-5 h-5 mr-2" />
               {profileMutation.isPending ? 'Aggiornamento...' : 'Salva Profilo'}
@@ -203,23 +203,23 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
       {activeTab === 'password' && (
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div>
-            <label className="block text-green-200 text-sm font-medium mb-2">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
               Password Attuale *
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type={showCurrentPassword ? 'text' : 'password'}
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                className="w-full pl-12 pr-12 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Inserisci la password attuale"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-300 hover:text-green-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -227,16 +227,16 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
           </div>
 
           <div>
-            <label className="block text-green-200 text-sm font-medium mb-2">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
               Nuova Password *
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type={showNewPassword ? 'text' : 'password'}
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                className="w-full pl-12 pr-12 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Inserisci la nuova password"
                 required
                 minLength={6}
@@ -244,34 +244,34 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-300 hover:text-green-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-green-200 text-xs mt-1">
+            <p className="text-gray-500 text-xs mt-1">
               La password deve essere di almeno 6 caratteri
             </p>
           </div>
 
           <div>
-            <label className="block text-green-200 text-sm font-medium mb-2">
+            <label className="block text-gray-700 text-sm font-medium mb-2">
               Conferma Nuova Password *
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-300" />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                className="w-full pl-12 pr-12 py-3 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-300/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 shadow-lg shadow-green-400/20"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Conferma la nuova password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-300 hover:text-green-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -282,7 +282,7 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
             <button
               type="submit"
               disabled={passwordMutation.isPending}
-              className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50 disabled:opacity-50 disabled:transform-none flex items-center justify-center"
+              className="w-full btn-primary flex items-center justify-center"
             >
               <Lock className="w-5 h-5 mr-2" />
               {passwordMutation.isPending ? 'Aggiornamento...' : 'Cambia Password'}
