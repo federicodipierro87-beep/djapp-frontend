@@ -12,7 +12,8 @@ import {
   Euro,
   QrCode,
   RefreshCw,
-  Copy
+  Copy,
+  User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi } from '../services/api';
@@ -20,9 +21,10 @@ import DJQueue from '../components/DJQueue';
 import RequestList from '../components/RequestList';
 import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
+import DJProfile from '../components/DJProfile';
 
 const DJPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'settings'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'settings' | 'profile'>('requests');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -292,6 +294,18 @@ const DJPanel: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('profile')}
+              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
+                activeTab === 'profile'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <User className="w-4 h-4 mr-1 inline" />
+              Profilo
+            </button>
+
+            <button
               onClick={() => setActiveTab('settings')}
               className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'settings'
@@ -322,6 +336,12 @@ const DJPanel: React.FC = () => {
             queue={queueData.queue} 
             totalEarnings={queueData.totalEarnings}
             onUpdate={refetchQueue}
+          />
+        )}
+        
+        {activeTab === 'profile' && (
+          <DJProfile 
+            dj={djData} 
           />
         )}
         

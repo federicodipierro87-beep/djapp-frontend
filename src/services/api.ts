@@ -152,6 +152,11 @@ export const djApi = {
     const response = await api.get('/dj/stats');
     return response.data;
   },
+
+  changePassword: async (data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> => {
+    const response = await api.post('/dj/change-password', data);
+    return response.data;
+  },
 };
 
 // Payment API

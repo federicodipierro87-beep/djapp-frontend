@@ -2,6 +2,9 @@ export interface DJ {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  address?: string;
   eventCode: string;
   minDonation: number;
   stripeAccountId?: string;
