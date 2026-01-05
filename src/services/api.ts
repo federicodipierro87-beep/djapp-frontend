@@ -198,6 +198,11 @@ export const adminApi = {
     const response = await api.patch(`/admin/djs/${djId}/reject`);
     return response.data;
   },
+
+  deleteDJ: async (djId: string): Promise<{ message: string; deletedDJ: any }> => {
+    const response = await api.delete(`/admin/djs/${djId}`);
+    return response.data;
+  },
 };
 
 export default api;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, XCircle, Clock, Users, ArrowLeft } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { adminApi } from '../services/api';
@@ -45,6 +45,18 @@ const AdminDashboard: React.FC = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: adminApi.deleteDJ,
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'djs'] });
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.error || 'Errore nella cancellazione';
+      toast.error(message);
+    },
+  });
+
   const handleApprove = (djId: string) => {
     if (window.confirm('Sei sicuro di voler approvare questo DJ?')) {
       approveMutation.mutate(djId);
@@ -54,6 +66,17 @@ const AdminDashboard: React.FC = () => {
   const handleReject = (djId: string) => {
     if (window.confirm('Sei sicuro di voler respingere questo DJ?')) {
       rejectMutation.mutate(djId);
+    }
+  };
+
+  const handleDelete = (djId: string, djName: string) => {
+    if (window.confirm(`Sei sicuro di voler CANCELLARE DEFINITIVAMENTE il DJ "${djName}"?\n\nQuesta azione non può essere annullata e cancellerà:\n- Account DJ\n- Tutte le richieste\n- Tutti gli eventi\n- Tutte le statistiche\n\nDigita "CANCELLA" per confermare.`)) {
+      const confirmation = window.prompt(`Per confermare la cancellazione di "${djName}", digita "CANCELLA" (tutto maiuscolo):`);
+      if (confirmation === 'CANCELLA') {
+        deleteMutation.mutate(djId);
+      } else {
+        toast.error('Cancellazione annullata - testo di conferma non corretto');
+      }
     }
   };
 
@@ -221,6 +244,14 @@ const AdminDashboard: React.FC = () => {
                             <XCircle className="w-4 h-4 mr-2 inline" />
                             Respingi
                           </button>
+                          <button
+                            onClick={() => handleDelete(dj.id, dj.name)}
+                            disabled={deleteMutation.isPending}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2 inline" />
+                            Cancella
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -261,26 +292,36 @@ const AdminDashboard: React.FC = () => {
                             Registrato il {formatDate(dj.createdAt)}
                           </p>
                         </div>
-                        {dj.status === 'PENDING' && (
-                          <div className="flex items-center space-x-3">
-                            <button
-                              onClick={() => handleApprove(dj.id)}
-                              disabled={approveMutation.isPending}
-                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2 inline" />
-                              Approva
-                            </button>
-                            <button
-                              onClick={() => handleReject(dj.id)}
-                              disabled={rejectMutation.isPending}
-                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                            >
-                              <XCircle className="w-4 h-4 mr-2 inline" />
-                              Respingi
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-3">
+                          {dj.status === 'PENDING' && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(dj.id)}
+                                disabled={approveMutation.isPending}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2 inline" />
+                                Approva
+                              </button>
+                              <button
+                                onClick={() => handleReject(dj.id)}
+                                disabled={rejectMutation.isPending}
+                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                              >
+                                <XCircle className="w-4 h-4 mr-2 inline" />
+                                Respingi
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleDelete(dj.id, dj.name)}
+                            disabled={deleteMutation.isPending}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2 inline" />
+                            Cancella
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
