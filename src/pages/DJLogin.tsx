@@ -21,7 +21,13 @@ const DJLogin: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem('dj_token', data.token);
       toast.success('Accesso effettuato con successo!');
-      navigate('/dj/panel');
+      
+      // Check if admin login
+      if (data.isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dj/panel');
+      }
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Accesso fallito';
@@ -32,9 +38,9 @@ const DJLogin: React.FC = () => {
   const registerMutation = useMutation({
     mutationFn: authApi.register,
     onSuccess: (data) => {
-      localStorage.setItem('dj_token', data.token);
-      toast.success('Registrazione completata!');
-      navigate('/dj/panel');
+      toast.success('Registrazione completata! In attesa di approvazione dall\'amministratore.');
+      setIsLogin(true); // Switch to login form
+      setFormData({ email: '', password: '', name: '' }); // Clear form
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Registrazione fallita';

@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Event from './pages/Event';
 import DJLogin from './pages/DJLogin';
 import DJPanel from './pages/DJPanel';
+import AdminDashboard from './pages/AdminDashboard';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/event/:eventCode" element={<Event />} />
             <Route path="/dj/login" element={<DJLogin />} />
             <Route path="/dj/panel" element={<DJPanel />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

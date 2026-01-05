@@ -172,4 +172,27 @@ export const paymentApi = {
   },
 };
 
+// Admin API
+export const adminApi = {
+  getPendingDJs: async (): Promise<any[]> => {
+    const response = await api.get('/admin/djs/pending');
+    return response.data;
+  },
+
+  getAllDJs: async (): Promise<any[]> => {
+    const response = await api.get('/admin/djs');
+    return response.data;
+  },
+
+  approveDJ: async (djId: string): Promise<{ message: string; dj: any }> => {
+    const response = await api.patch(`/admin/djs/${djId}/approve`);
+    return response.data;
+  },
+
+  rejectDJ: async (djId: string): Promise<{ message: string; dj: any }> => {
+    const response = await api.patch(`/admin/djs/${djId}/reject`);
+    return response.data;
+  },
+};
+
 export default api;
