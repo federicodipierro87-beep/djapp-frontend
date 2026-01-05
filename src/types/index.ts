@@ -109,6 +109,7 @@ export interface AuthResponse {
   message: string;
   token: string;
   dj: DJ;
+  isAdmin?: boolean;
 }
 
 export interface ApiError {
