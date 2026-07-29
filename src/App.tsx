@@ -8,6 +8,8 @@ import Event from './pages/Event';
 import DJLogin from './pages/DJLogin';
 import DJPanel from './pages/DJPanel';
 import AdminDashboard from './pages/AdminDashboard';
+import Subscription from './pages/Subscription';
+import SubscriptionSuccess from './pages/SubscriptionSuccess';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
@@ -28,6 +30,8 @@ function App() {
             <Route path="/event/:eventCode" element={<Event />} />
             <Route path="/dj/login" element={<DJLogin />} />
             <Route path="/dj/panel" element={<DJPanel />} />
+            <Route path="/dj/subscription" element={<Subscription />} />
+            <Route path="/dj/subscription/success" element={<SubscriptionSuccess />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

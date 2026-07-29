@@ -16,13 +16,14 @@ import {
   User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { authApi, requestsApi, queueApi, djApi } from '../services/api';
+import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
 import DJQueue from '../components/DJQueue';
 import RequestList from '../components/RequestList';
 import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
 import DJProfile from '../components/DJProfile';
 import QRCodeModal from '../components/QRCodeModal';
+import SubscriptionStatus from '../components/SubscriptionStatus';
 import { useSocket } from '../hooks/useSocket';
 
 const DJPanel: React.FC = () => {
@@ -45,6 +46,19 @@ const DJPanel: React.FC = () => {
     queryFn: authApi.me,
     retry: false,
   });
+
+  const { data: subscriptionStatus, isLoading: subscriptionLoading } = useQuery({
+    queryKey: ['subscription-status'],
+    queryFn: subscriptionApi.getStatus,
+    retry: false,
+  });
+
+  // Redirect to subscription page if subscription is required
+  useEffect(() => {
+    if (!subscriptionLoading && subscriptionStatus?.requiresSubscription) {
+      navigate('/dj/subscription');
+    }
+  }, [subscriptionStatus, subscriptionLoading, navigate]);
 
   const { data: requests, refetch: refetchRequests } = useQuery({
     queryKey: ['dj-requests'],
@@ -171,6 +185,9 @@ const DJPanel: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+              {/* Subscription Status */}
+              <SubscriptionStatus compact />
+
               {/* Event Code Display */}
               <div className="bg-primary-50 border border-primary-200 rounded-lg p-2 sm:p-3">
                 <div className="flex items-center space-x-2">

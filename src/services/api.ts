@@ -1,14 +1,18 @@
 import axios from 'axios';
-import type { 
-  DJ, 
-  Request, 
-  QueueItem, 
-  PublicQueueItem, 
-  EventStats, 
+import type {
+  DJ,
+  Request,
+  QueueItem,
+  PublicQueueItem,
+  EventStats,
   EventSummary,
-  CreateRequestData, 
+  CreateRequestData,
   AuthResponse,
-  PaymentIntent
+  PaymentIntent,
+  SubscriptionStatusResponse,
+  CheckoutSessionResponse,
+  PortalSessionResponse,
+  SubscriptionPlan
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -206,6 +210,42 @@ export const adminApi = {
 
   deleteDJ: async (djId: string): Promise<{ message: string; deletedDJ: any }> => {
     const response = await api.delete(`/admin/djs/${djId}`);
+    return response.data;
+  },
+};
+
+// Subscription API
+export const subscriptionApi = {
+  getStatus: async (): Promise<SubscriptionStatusResponse> => {
+    const response = await api.get('/subscriptions/status');
+    return response.data;
+  },
+
+  createCheckoutSession: async (
+    plan: SubscriptionPlan,
+    successUrl: string,
+    cancelUrl: string
+  ): Promise<CheckoutSessionResponse> => {
+    const response = await api.post('/subscriptions/checkout', {
+      plan,
+      successUrl,
+      cancelUrl
+    });
+    return response.data;
+  },
+
+  createPortalSession: async (returnUrl: string): Promise<PortalSessionResponse> => {
+    const response = await api.post('/subscriptions/portal', { returnUrl });
+    return response.data;
+  },
+
+  cancel: async (): Promise<{ message: string; cancelAtPeriodEnd: boolean; currentPeriodEnd: string }> => {
+    const response = await api.post('/subscriptions/cancel');
+    return response.data;
+  },
+
+  reactivate: async (): Promise<{ message: string; cancelAtPeriodEnd: boolean }> => {
+    const response = await api.post('/subscriptions/reactivate');
     return response.data;
   },
 };

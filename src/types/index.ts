@@ -119,3 +119,36 @@ export interface ApiError {
   error: string;
   details?: any;
 }
+
+export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'UNPAID';
+
+export type SubscriptionPlan = 'MONTHLY' | 'ANNUAL';
+
+export interface Subscription {
+  id: string;
+  status: SubscriptionStatus;
+  plan: SubscriptionPlan;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface SubscriptionStatusResponse {
+  hasSubscription: boolean;
+  subscription: Subscription | null;
+  requiresSubscription: boolean;
+}
+
+export interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+export interface PortalSessionResponse {
+  url: string;
+}
+
+export interface AuthResponseWithSubscription extends AuthResponse {
+  subscription?: SubscriptionStatusResponse;
+}

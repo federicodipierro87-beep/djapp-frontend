@@ -18,13 +18,16 @@ const DJLogin: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       localStorage.setItem('dj_token', data.token);
       toast.success('Accesso effettuato con successo!');
-      
+
       // Check if admin login
       if (data.isAdmin) {
         navigate('/admin/dashboard');
+      } else if (data.subscription?.requiresSubscription) {
+        // DJ needs to subscribe
+        navigate('/dj/subscription');
       } else {
         navigate('/dj/panel');
       }
