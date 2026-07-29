@@ -122,14 +122,14 @@ const Subscription: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center mb-12">
           <div className="inline-flex items-center bg-green-500/20 border border-green-400/30 rounded-full px-4 py-2 mb-6">
             <Zap className="w-4 h-4 text-green-400 mr-2" />
-            <span className="text-green-300 text-sm font-medium">14 giorni di prova gratuita</span>
+            <span className="text-green-300 text-sm font-medium">7 giorni di prova gratuita</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ textShadow: '0 0 30px rgba(34, 197, 94, 0.5)' }}>
             Scegli il tuo piano
           </h1>
           <p className="text-green-100 text-lg max-w-2xl mx-auto">
-            Inizia con 14 giorni di prova gratuita. Nessun addebito fino alla fine del periodo di prova.
+            Inizia con 7 giorni di prova gratuita. Nessun addebito fino alla fine del periodo di prova.
           </p>
         </div>
 
@@ -217,7 +217,7 @@ const Subscription: React.FC = () => {
           <p className="text-green-300/70 text-sm mt-4">
             Annulla in qualsiasi momento durante il periodo di prova.
             <br />
-            Non ti verrà addebitato nulla fino al termine dei 14 giorni.
+            Non ti verrà addebitato nulla fino al termine dei 7 giorni.
           </p>
         </div>
 
@@ -226,7 +226,7 @@ const Subscription: React.FC = () => {
           <h3 className="text-white font-semibold mb-4">Domande frequenti</h3>
           <div className="space-y-4 text-left">
             <div className="bg-green-900/10 border border-green-400/20 rounded-lg p-4">
-              <h4 className="text-green-300 font-medium mb-1">Cosa succede dopo i 14 giorni?</h4>
+              <h4 className="text-green-300 font-medium mb-1">Cosa succede dopo i 7 giorni?</h4>
               <p className="text-green-200/70 text-sm">
                 Dopo il periodo di prova, verrai addebitato automaticamente per il piano scelto.
                 Puoi annullare in qualsiasi momento prima della fine della prova.
