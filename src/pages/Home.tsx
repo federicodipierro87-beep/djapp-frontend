@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Music, Heart, Search, Sparkles } from 'lucide-react';
+import { Music, Heart, Search, Sparkles, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Alien DJ Icon using real 👽 emoji with headphones overlay
@@ -158,6 +158,17 @@ const Home: React.FC = () => {
                 Entra nell'Evento
               </button>
             </form>
+
+            <div className="mt-4 pt-4 border-t border-green-400/20">
+              <p className="text-green-200/70 text-sm mb-3 text-center">oppure</p>
+              <button
+                onClick={() => navigate('/discover')}
+                className="w-full flex items-center justify-center gap-2 bg-black/40 border-2 border-green-400/50 text-green-400 font-bold py-3 px-4 rounded-lg hover:bg-green-400/10 hover:border-green-400 transition-all duration-300"
+              >
+                <MapPin className="w-5 h-5" />
+                Scopri Eventi Vicino a Te
+              </button>
+            </div>
           </div>
         </div>
 

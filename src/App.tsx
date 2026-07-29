@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 import Home from './pages/Home';
 import Event from './pages/Event';
+import DiscoverEvents from './pages/DiscoverEvents';
 import DJLogin from './pages/DJLogin';
 import DJPanel from './pages/DJPanel';
 import AdminDashboard from './pages/AdminDashboard';
@@ -27,6 +28,7 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/discover" element={<DiscoverEvents />} />
             <Route path="/event/:eventCode" element={<Event />} />
             <Route path="/dj/login" element={<DJLogin />} />
             <Route path="/dj/panel" element={<DJPanel />} />

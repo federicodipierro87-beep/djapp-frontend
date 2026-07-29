@@ -24,10 +24,11 @@ import DJSettings from '../components/DJSettings';
 import DJProfile from '../components/DJProfile';
 import QRCodeModal from '../components/QRCodeModal';
 import SubscriptionStatus from '../components/SubscriptionStatus';
+import EventList from '../components/EventList';
 import { useSocket } from '../hooks/useSocket';
 
 const DJPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'settings' | 'profile'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'events' | 'settings' | 'profile'>('requests');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrData, setQrData] = useState<{ qrCode: string; eventCode: string; eventUrl: string } | null>(null);
   const navigate = useNavigate();
@@ -346,6 +347,17 @@ const DJPanel: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setActiveTab('events')}
+              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
+                activeTab === 'events'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Eventi
+            </button>
+
+            <button
               onClick={() => setActiveTab('profile')}
               className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === 'profile'
@@ -391,9 +403,13 @@ const DJPanel: React.FC = () => {
           />
         )}
         
+        {activeTab === 'events' && (
+          <EventList />
+        )}
+
         {activeTab === 'profile' && (
-          <DJProfile 
-            dj={djData} 
+          <DJProfile
+            dj={djData}
           />
         )}
         

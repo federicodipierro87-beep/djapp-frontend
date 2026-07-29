@@ -12,7 +12,11 @@ import type {
   SubscriptionStatusResponse,
   CheckoutSessionResponse,
   PortalSessionResponse,
-  SubscriptionPlan
+  SubscriptionPlan,
+  Event,
+  CreateEventData,
+  UpdateEventData,
+  EventStatus
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -211,6 +215,55 @@ export const adminApi = {
   deleteDJ: async (djId: string): Promise<{ message: string; deletedDJ: any }> => {
     const response = await api.delete(`/admin/djs/${djId}`);
     return response.data;
+  },
+};
+
+// Events API
+export const eventsApi = {
+  create: async (data: CreateEventData): Promise<Event> => {
+    const response = await api.post('/events', data);
+    return response.data;
+  },
+
+  getMyEvents: async (): Promise<Event[]> => {
+    const response = await api.get('/events/my');
+    return response.data;
+  },
+
+  getNearby: async (lat: number, lng: number, radius = 10, status: EventStatus = 'ACTIVE'): Promise<Event[]> => {
+    const response = await api.get('/events/nearby', {
+      params: { lat, lng, radius, status }
+    });
+    return response.data;
+  },
+
+  getByCode: async (eventCode: string): Promise<Event> => {
+    const response = await api.get(`/events/code/${eventCode}`);
+    return response.data;
+  },
+
+  update: async (id: string, data: UpdateEventData): Promise<Event> => {
+    const response = await api.patch(`/events/${id}`, data);
+    return response.data;
+  },
+
+  activate: async (id: string): Promise<Event> => {
+    const response = await api.patch(`/events/${id}/activate`);
+    return response.data;
+  },
+
+  end: async (id: string): Promise<Event> => {
+    const response = await api.patch(`/events/${id}/end`);
+    return response.data;
+  },
+
+  cancel: async (id: string): Promise<Event> => {
+    const response = await api.patch(`/events/${id}/cancel`);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/events/${id}`);
   },
 };
 

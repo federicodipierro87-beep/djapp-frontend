@@ -152,3 +152,48 @@ export interface PortalSessionResponse {
 export interface AuthResponseWithSubscription extends AuthResponse {
   subscription?: SubscriptionStatusResponse;
 }
+
+export type EventStatus = 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+
+export interface Event {
+  id: string;
+  djId: string;
+  name: string;
+  eventCode: string;
+  description?: string;
+  address: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  dateTime: string;
+  endDateTime?: string;
+  status: EventStatus;
+  createdAt: string;
+  updatedAt: string;
+  dj?: {
+    id: string;
+    name: string;
+    minDonation?: number;
+  };
+  _count?: {
+    requests: number;
+    queueItems: number;
+  };
+  distance?: number;
+}
+
+export interface CreateEventData {
+  name: string;
+  description?: string;
+  address: string;
+  dateTime: string;
+  endDateTime?: string;
+}
+
+export interface UpdateEventData {
+  name?: string;
+  description?: string;
+  address?: string;
+  dateTime?: string;
+  endDateTime?: string;
+}
