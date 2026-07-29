@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Music, 
-  LogOut, 
-  Settings, 
-  Plus, 
-  Users, 
-  Clock, 
-  CheckCircle, 
+import {
+  Music,
+  LogOut,
+  Settings,
+  Plus,
+  Users,
+  Clock,
+  CheckCircle,
   Euro,
   QrCode,
   RefreshCw,
@@ -23,6 +23,7 @@ import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
 import DJProfile from '../components/DJProfile';
 import QRCodeModal from '../components/QRCodeModal';
+import { useSocket } from '../hooks/useSocket';
 
 const DJPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'settings' | 'profile'>('requests');
@@ -48,19 +49,27 @@ const DJPanel: React.FC = () => {
   const { data: requests, refetch: refetchRequests } = useQuery({
     queryKey: ['dj-requests'],
     queryFn: requestsApi.getDJRequests,
-    refetchInterval: 30000, // Ridotto da 5s a 30s
+    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
   });
 
   const { data: queueData, refetch: refetchQueue } = useQuery({
     queryKey: ['dj-queue'],
     queryFn: queueApi.getDJ,
-    refetchInterval: 30000, // Ridotto da 5s a 30s
+    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
   });
 
   const { data: stats } = useQuery({
     queryKey: ['dj-stats'],
     queryFn: djApi.getStats,
-    refetchInterval: 60000, // Ridotto da 10s a 60s
+    refetchInterval: 60000,
+  });
+
+  // Socket.io real-time updates
+  useSocket({
+    eventCode: djData?.eventCode || '',
+    onNewRequest: () => {
+      toast('Nuova richiesta ricevuta!', { icon: '🎵' });
+    },
   });
 
   const newEventMutation = useMutation({

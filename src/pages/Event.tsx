@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Music, Plus, ArrowLeft, Heart } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { queueApi } from '../services/api';
 import PublicQueue from '../components/PublicQueue';
 import SongRequestForm from '../components/SongRequestForm';
 import { PublicQueueItem } from '../types';
+import { useSocket } from '../hooks/useSocket';
 
 const Event: React.FC = () => {
   const { eventCode } = useParams<{ eventCode: string }>();
@@ -17,7 +19,21 @@ const Event: React.FC = () => {
     queryKey: ['public-queue', eventCode],
     queryFn: () => queueApi.getPublic(eventCode!),
     enabled: !!eventCode,
-    refetchInterval: 30000, // Ridotto da 5s a 30s per evitare rate limiting
+    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
+  });
+
+  // Socket.io real-time updates
+  useSocket({
+    eventCode: eventCode || '',
+    onRequestAccepted: () => {
+      toast.success('La tua richiesta è stata accettata!');
+    },
+    onRequestRejected: () => {
+      toast.error('La tua richiesta è stata rifiutata');
+    },
+    onNowPlayingChanged: (song) => {
+      toast(`Ora in riproduzione: ${song.songTitle}`, { icon: '🎵' });
+    },
   });
 
   if (!eventCode) {
