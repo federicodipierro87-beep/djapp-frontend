@@ -9,12 +9,13 @@ import {
   Navigation,
   RefreshCw,
   ArrowLeft,
-  Filter
+  Filter,
+  Calendar,
+  Music
 } from 'lucide-react';
 import { eventsApi } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
 import EventMap from '../components/EventMap';
-import EventCard from '../components/EventCard';
 import type { Event, EventStatus } from '../types';
 
 const radiusOptions = [
@@ -88,160 +89,235 @@ const DiscoverEvents: React.FC = () => {
     geolocation.refresh();
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Home
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Scopri Eventi</h1>
-            <button
-              onClick={() => refetch()}
-              className="p-2 hover:bg-gray-100 rounded-full"
-              title="Aggiorna"
-            >
-              <RefreshCw className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearchCity()}
-                  placeholder="Cerca citta..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
+  return (
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Neon Green Gradient Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-green-900/20 to-black"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-green-500/10 via-transparent to-green-400/10"></div>
+        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-green-400/20 via-transparent to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-green-500/20 via-transparent to-transparent rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-green-400/30 animate-pulse shadow-lg shadow-green-400/50"></div>
+        <div className="absolute top-60 right-32 w-20 h-20 rounded-full bg-green-300/40 animate-bounce shadow-md shadow-green-300/50"></div>
+        <div className="absolute bottom-40 left-1/4 w-16 h-16 rounded-full bg-green-500/35 animate-pulse shadow-sm shadow-green-500/50"></div>
+      </div>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="bg-green-900/30 backdrop-blur-lg border-b border-green-400/30 sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between mb-4">
               <button
-                onClick={handleSearchCity}
-                className="btn-primary px-4"
+                onClick={() => navigate('/')}
+                className="flex items-center text-green-300 hover:text-green-400 transition-colors"
               >
-                Cerca
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Home
+              </button>
+              <h1 className="text-xl font-bold text-green-400" style={{textShadow: '0 0 20px rgba(34, 197, 94, 0.5)'}}>
+                Scopri Eventi
+              </h1>
+              <button
+                onClick={() => refetch()}
+                className="p-2 hover:bg-green-400/10 rounded-full transition-colors"
+                title="Aggiorna"
+              >
+                <RefreshCw className="w-5 h-5 text-green-400" />
               </button>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handleUseMyLocation}
-                className="btn-secondary flex items-center"
-                disabled={geolocation.loading}
-              >
-                <Navigation className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Usa posizione</span>
-              </button>
+            {/* Search and Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 flex gap-2">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-400/60" />
+                  <input
+                    type="text"
+                    value={searchCity}
+                    onChange={(e) => setSearchCity(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearchCity()}
+                    placeholder="Cerca citta..."
+                    className="w-full pl-10 pr-4 py-2 bg-black/60 border-2 border-green-400/50 rounded-lg text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                  />
+                </div>
+                <button
+                  onClick={handleSearchCity}
+                  className="bg-gradient-to-r from-green-500 to-green-400 text-black font-bold px-4 py-2 rounded-lg hover:from-green-400 hover:to-green-300 transition-all duration-300 shadow-lg shadow-green-400/30"
+                >
+                  Cerca
+                </button>
+              </div>
 
-              <select
-                value={radius}
-                onChange={(e) => setRadius(Number(e.target.value))}
-                className="border rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-primary-500"
-              >
-                {radiusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleUseMyLocation}
+                  className="flex items-center bg-black/40 border-2 border-green-400/50 text-green-400 font-medium px-3 py-2 rounded-lg hover:bg-green-400/10 hover:border-green-400 transition-all duration-300"
+                  disabled={geolocation.loading}
+                >
+                  <Navigation className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Usa posizione</span>
+                </button>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as EventStatus)}
-                className="border rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="ACTIVE">Attivi</option>
-                <option value="SCHEDULED">Programmati</option>
-              </select>
+                <select
+                  value={radius}
+                  onChange={(e) => setRadius(Number(e.target.value))}
+                  className="bg-black/60 border-2 border-green-400/50 rounded-lg px-3 py-2 text-green-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                >
+                  {radiusOptions.map((option) => (
+                    <option key={option.value} value={option.value} className="bg-black text-green-400">
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as EventStatus)}
+                  className="bg-black/60 border-2 border-green-400/50 rounded-lg px-3 py-2 text-green-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                >
+                  <option value="ACTIVE" className="bg-black text-green-400">Attivi</option>
+                  <option value="SCHEDULED" className="bg-black text-green-400">Programmati</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {geolocation.loading && !customLocation ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-primary-600 animate-spin mb-4" />
-            <p className="text-gray-600">Ottenendo la tua posizione...</p>
-          </div>
-        ) : geolocation.error && !customLocation ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-4" />
-            <h3 className="font-medium text-yellow-800 mb-2">{geolocation.error}</h3>
-            <p className="text-yellow-700 mb-4">
-              Puoi cercare manualmente una citta per vedere gli eventi nelle vicinanze.
-            </p>
-            <div className="flex justify-center gap-3">
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {geolocation.loading && !customLocation ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-green-400 animate-spin mb-4" style={{filter: 'drop-shadow(0 0 10px rgba(34, 197, 94, 0.5))'}} />
+              <p className="text-green-200">Ottenendo la tua posizione...</p>
+            </div>
+          ) : geolocation.error && !customLocation ? (
+            <div className="bg-yellow-900/30 backdrop-blur-lg border border-yellow-400/30 rounded-2xl p-6 text-center max-w-lg mx-auto">
+              <AlertCircle className="w-8 h-8 text-yellow-400 mx-auto mb-4" style={{filter: 'drop-shadow(0 0 10px rgba(250, 204, 21, 0.5))'}} />
+              <h3 className="font-medium text-yellow-400 mb-2">{geolocation.error}</h3>
+              <p className="text-yellow-200/80 mb-4">
+                Puoi cercare manualmente una citta per vedere gli eventi nelle vicinanze.
+              </p>
               <button
                 onClick={() => geolocation.refresh()}
-                className="btn-secondary"
+                className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-400 font-medium px-4 py-2 rounded-lg hover:bg-yellow-400/30 transition-colors"
               >
                 Riprova
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Map */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden" style={{ height: '500px' }}>
-                <EventMap
-                  events={events || []}
-                  userLocation={currentLocation}
-                  onEventSelect={handleEventSelect}
-                  center={currentLocation ? [currentLocation.lat, currentLocation.lng] : undefined}
-                />
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Map */}
+              <div className="lg:col-span-2">
+                <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl border border-green-400/30 overflow-hidden shadow-2xl shadow-green-400/10" style={{ height: '500px' }}>
+                  <EventMap
+                    events={events || []}
+                    userLocation={currentLocation}
+                    onEventSelect={handleEventSelect}
+                    center={currentLocation ? [currentLocation.lat, currentLocation.lng] : undefined}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Event List */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <h2 className="font-semibold text-gray-900 mb-4">
-                  Eventi nelle vicinanze
-                  {events && events.length > 0 && (
-                    <span className="ml-2 text-sm font-normal text-gray-500">
-                      ({events.length} trovati)
-                    </span>
+              {/* Event List */}
+              <div className="lg:col-span-1">
+                <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl border border-green-400/30 p-4 shadow-2xl shadow-green-400/10">
+                  <h2 className="font-semibold text-green-400 mb-4 text-lg" style={{textShadow: '0 0 10px rgba(34, 197, 94, 0.3)'}}>
+                    Eventi nelle vicinanze
+                    {events && events.length > 0 && (
+                      <span className="ml-2 text-sm font-normal text-green-300/70">
+                        ({events.length} trovati)
+                      </span>
+                    )}
+                  </h2>
+
+                  {eventsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 text-green-400 animate-spin" />
+                    </div>
+                  ) : events && events.length > 0 ? (
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar-thin pr-1">
+                      {events.map((event) => (
+                        <div
+                          key={event.id}
+                          onClick={() => handleEventSelect(event)}
+                          className="bg-black/40 border border-green-400/30 rounded-xl p-4 cursor-pointer hover:border-green-400/60 hover:bg-green-400/5 transition-all duration-300"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span
+                                  className={`w-2 h-2 rounded-full ${
+                                    event.status === 'ACTIVE' ? 'bg-green-400 shadow-lg shadow-green-400/50' : 'bg-yellow-400 shadow-lg shadow-yellow-400/50'
+                                  }`}
+                                />
+                                <span className="text-xs text-green-300/70">
+                                  {event.status === 'ACTIVE' ? 'Attivo ora' : 'Programmato'}
+                                </span>
+                              </div>
+
+                              <h3 className="font-semibold text-green-400 mb-1">{event.name}</h3>
+
+                              <div className="flex items-center text-sm text-green-200/80 mb-1">
+                                <Music className="w-4 h-4 mr-1 text-green-400" />
+                                <span>{event.dj?.name}</span>
+                              </div>
+
+                              <div className="flex items-center text-sm text-green-200/60">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                <span>{event.city}</span>
+                                {event.distance !== undefined && (
+                                  <span className="ml-2 text-green-400 font-medium">
+                                    {event.distance < 1
+                                      ? `${Math.round(event.distance * 1000)} m`
+                                      : `${event.distance.toFixed(1)} km`}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center text-sm text-green-200/60 mt-1">
+                                <Calendar className="w-4 h-4 mr-1" />
+                                <span>{formatDateTime(event.dateTime)}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center text-green-400">
+                              <ArrowLeft className="w-5 h-5 rotate-180" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <MapPin className="w-12 h-12 text-green-400/30 mx-auto mb-3" />
+                      <p className="text-green-200/70">
+                        Nessun evento trovato in questa zona.
+                      </p>
+                      <p className="text-sm text-green-200/50 mt-1">
+                        Prova ad aumentare il raggio di ricerca.
+                      </p>
+                    </div>
                   )}
-                </h2>
-
-                {eventsLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
-                  </div>
-                ) : events && events.length > 0 ? (
-                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                    {events.map((event) => (
-                      <EventCard key={event.id} event={event} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">
-                      Nessun evento trovato in questa zona.
-                    </p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Prova ad aumentare il raggio di ricerca.
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
