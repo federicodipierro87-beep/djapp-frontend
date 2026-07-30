@@ -267,6 +267,21 @@ export const eventsApi = {
   },
 };
 
+// Spotify API
+export const spotifyApi = {
+  search: async (query: string, limit = 10, offset = 0): Promise<{ tracks: any[]; total: number }> => {
+    const response = await api.get('/spotify/search', {
+      params: { q: query, limit, offset }
+    });
+    return response.data;
+  },
+
+  getTrack: async (trackId: string): Promise<any> => {
+    const response = await api.get(`/spotify/track/${trackId}`);
+    return response.data;
+  },
+};
+
 // Subscription API
 export const subscriptionApi = {
   getStatus: async (): Promise<SubscriptionStatusResponse> => {
