@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useElements, useStripe, CardElement } from '@stripe/react-stripe-js';
-import { PayPalButtons } from '@paypal/react-paypal-js';
 import { Smartphone, AlertCircle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { paymentApi } from '../services/api';
@@ -27,10 +26,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const stripeIntentMutation = useMutation({
     mutationFn: (amount: number) => paymentApi.createStripeIntent(amount),
-  });
-
-  const paypalOrderMutation = useMutation({
-    mutationFn: (amount: number) => paymentApi.createPayPalOrder(amount),
   });
 
   const satispayMutation = useMutation({
@@ -177,38 +172,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       case 'PAYPAL':
         return (
           <div className="space-y-4">
-            <PayPalButtons
-              disabled={isProcessing}
-              style={{ 
-                layout: "vertical",
-                color: "blue",
-                shape: "rect",
-                label: "pay"
-              }}
-              createOrder={async () => {
-                try {
-                  const { orderId } = await paypalOrderMutation.mutateAsync(amount);
-                  if (!orderId) {
-                    throw new Error('Failed to create PayPal order');
-                  }
-                  return orderId;
-                } catch (error) {
-                  console.error('PayPal order creation failed:', error);
-                  throw error;
-                }
-              }}
-              onApprove={async (data) => {
-                // PayPal payment approved (authorized)
-                onSuccess(data.orderID);
-              }}
-              onError={(error) => {
-                console.error('PayPal error:', error);
-                setPaymentError('PayPal payment failed');
-              }}
-              onCancel={() => {
-                setPaymentError('PayPal payment cancelled');
-              }}
-            />
+            <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
+              <p className="text-gray-600">PayPal non disponibile. Usa la carta di credito.</p>
+            </div>
           </div>
         );
 
