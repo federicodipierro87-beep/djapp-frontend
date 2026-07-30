@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Music, Plus, ArrowLeft, Heart } from 'lucide-react';
+import { Music, Plus, ArrowLeft, Heart, MapPin, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { queueApi } from '../services/api';
+import { queueApi, eventsApi } from '../services/api';
 import PublicQueue from '../components/PublicQueue';
 import SongRequestForm from '../components/SongRequestForm';
-import { PublicQueueItem } from '../types';
+import { PublicQueueItem, Event as EventType } from '../types';
 import { useSocket } from '../hooks/useSocket';
 
 const Event: React.FC = () => {
@@ -15,11 +15,19 @@ const Event: React.FC = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [showDonationForm, setShowDonationForm] = useState(false);
 
-  const { data: queue, isLoading, error } = useQuery({
+  // Try to fetch event info from new events system
+  const { data: eventInfo, isLoading: eventLoading, error: eventError } = useQuery({
+    queryKey: ['event-info', eventCode],
+    queryFn: () => eventsApi.getByCode(eventCode!),
+    enabled: !!eventCode,
+    retry: false,
+  });
+
+  const { data: queue, isLoading: queueLoading, error: queueError } = useQuery({
     queryKey: ['public-queue', eventCode],
     queryFn: () => queueApi.getPublic(eventCode!),
     enabled: !!eventCode,
-    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
+    refetchInterval: 60000,
   });
 
   // Socket.io real-time updates
@@ -35,6 +43,17 @@ const Event: React.FC = () => {
       toast(`Ora in riproduzione: ${song.songTitle}`, { icon: '🎵' });
     },
   });
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   if (!eventCode) {
     return (
@@ -52,7 +71,8 @@ const Event: React.FC = () => {
     );
   }
 
-  if (error) {
+  // Show error only if both event info and queue fail
+  if (queueError && eventError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -69,6 +89,8 @@ const Event: React.FC = () => {
     );
   }
 
+  const isLoading = eventLoading || queueLoading;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -83,11 +105,37 @@ const Event: React.FC = () => {
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
-                  <Music className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary-600" />
-                  <span className="hidden sm:inline">Evento: </span>{eventCode}
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600">Richiedi canzoni e guarda la coda live</p>
+                {eventInfo ? (
+                  <>
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
+                      <Music className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary-600" />
+                      {eventInfo.name}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                      {eventInfo.dj && (
+                        <span className="font-medium">{eventInfo.dj.name}</span>
+                      )}
+                      {eventInfo.city && (
+                        <span className="flex items-center">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          {eventInfo.city}
+                        </span>
+                      )}
+                      <span className="flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {formatDateTime(eventInfo.dateTime)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
+                      <Music className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-primary-600" />
+                      <span className="hidden sm:inline">Evento: </span>{eventCode}
+                    </h1>
+                    <p className="text-sm sm:text-base text-gray-600">Richiedi canzoni e guarda la coda live</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -162,8 +210,8 @@ const Event: React.FC = () => {
                     </p>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
                       <p className="text-yellow-800 text-xs sm:text-sm">
-                        <strong>Funzionalità in arrivo!</strong><br />
-                        Il sistema di donazioni sarà disponibile a breve. Per ora puoi supportare il DJ richiedendo una canzone.
+                        <strong>Funzionalita in arrivo!</strong><br />
+                        Il sistema di donazioni sara disponibile a breve. Per ora puoi supportare il DJ richiedendo una canzone.
                       </p>
                     </div>
                     <button
@@ -186,7 +234,7 @@ const Event: React.FC = () => {
               <h2 className="text-base sm:text-lg font-semibold text-blue-900 mb-2 sm:mb-3">Come funziona</h2>
               <ol className="text-blue-800 space-y-1 sm:space-y-2 text-sm sm:text-base">
                 <li>1. Clicca "Richiedi Canzone" per inviare una canzone con una donazione</li>
-                <li>2. Il DJ esaminerà la tua richiesta e la accetterà o rifiuterà</li>
+                <li>2. Il DJ esaminera la tua richiesta e la accettera o rifiutera</li>
                 <li>3. Se accettata, la tua canzone entra in coda e verrai addebitato</li>
                 <li>4. Guarda la coda live qui sotto per vedere quando suona la tua canzone!</li>
               </ol>
