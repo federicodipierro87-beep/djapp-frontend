@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Music, Play, Pause, X, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Music, X, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { spotifyApi } from '../services/api';
 
@@ -11,7 +11,6 @@ interface SpotifyTrack {
   albumCover: string | null;
   albumCoverSmall: string | null;
   durationFormatted: string;
-  previewUrl: string | null;
   spotifyUrl: string;
 }
 
@@ -23,8 +22,6 @@ interface SpotifySearchProps {
 const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -42,31 +39,7 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
     staleTime: 60000,
   });
 
-  const handlePlayPreview = (track: SpotifyTrack) => {
-    if (!track.previewUrl) return;
-
-    if (playingTrackId === track.id) {
-      // Stop playing
-      audioRef.current?.pause();
-      setPlayingTrackId(null);
-    } else {
-      // Start playing
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      audioRef.current = new Audio(track.previewUrl);
-      audioRef.current.volume = 0.5;
-      audioRef.current.play();
-      audioRef.current.onended = () => setPlayingTrackId(null);
-      setPlayingTrackId(track.id);
-    }
-  };
-
   const handleSelect = (track: SpotifyTrack) => {
-    // Stop any playing audio
-    audioRef.current?.pause();
-    setPlayingTrackId(null);
-
     onSelect({
       songTitle: track.name,
       artistName: track.artist,
@@ -74,13 +47,6 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
       albumCover: track.albumCover || undefined,
     });
   };
-
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-    };
-  }, []);
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -146,11 +112,11 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
               {data.tracks.map((track: SpotifyTrack) => (
                 <div
                   key={track.id}
-                  className="flex items-center gap-3 p-3 bg-black/40 border border-green-400/30 rounded-xl hover:border-green-400/60 hover:bg-green-400/5 transition-all cursor-pointer group"
+                  className="flex items-center gap-3 p-3 bg-black/40 border border-green-400/30 rounded-xl hover:border-green-400/60 hover:bg-green-400/5 transition-all cursor-pointer"
                   onClick={() => handleSelect(track)}
                 >
                   {/* Album Cover */}
-                  <div className="relative w-12 h-12 flex-shrink-0">
+                  <div className="w-12 h-12 flex-shrink-0">
                     {track.albumCoverSmall ? (
                       <img
                         src={track.albumCoverSmall}
@@ -161,23 +127,6 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
                       <div className="w-12 h-12 rounded-lg bg-green-900/50 flex items-center justify-center">
                         <Music className="w-6 h-6 text-green-400/50" />
                       </div>
-                    )}
-
-                    {/* Preview Play Button */}
-                    {track.previewUrl && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePlayPreview(track);
-                        }}
-                        className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {playingTrackId === track.id ? (
-                          <Pause className="w-5 h-5 text-green-400" />
-                        ) : (
-                          <Play className="w-5 h-5 text-green-400" />
-                        )}
-                      </button>
                     )}
                   </div>
 

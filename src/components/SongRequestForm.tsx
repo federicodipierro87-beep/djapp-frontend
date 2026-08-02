@@ -73,6 +73,8 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       eventCode,
       songTitle: formData.songTitle,
       artistName: formData.artistName,
+      spotifyTrackId: formData.spotifyTrackId || undefined,
+      albumCover: formData.albumCover || undefined,
       requesterName: formData.requesterName,
       requesterEmail: formData.requesterEmail || undefined,
       donationAmount,
@@ -155,13 +157,19 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             </div>
 
             {/* Selected Song Preview */}
-            {formData.albumCover && (
+            {formData.spotifyTrackId && (
               <div className="flex items-center gap-4 p-4 bg-black/40 border border-green-400/30 rounded-xl">
-                <img
-                  src={formData.albumCover}
-                  alt="Album cover"
-                  className="w-16 h-16 rounded-lg object-cover"
-                />
+                {formData.albumCover ? (
+                  <img
+                    src={formData.albumCover}
+                    alt="Album cover"
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-lg bg-green-900/50 flex items-center justify-center">
+                    <Music className="w-8 h-8 text-green-400/50" />
+                  </div>
+                )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-green-400">{formData.songTitle}</h3>
                   <p className="text-green-200/70">{formData.artistName}</p>
@@ -177,7 +185,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             )}
 
             {/* Manual Song Details */}
-            {!formData.albumCover && (
+            {!formData.spotifyTrackId && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-green-300 mb-2">

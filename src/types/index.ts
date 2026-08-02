@@ -18,6 +18,8 @@ export interface Request {
   id: string;
   songTitle: string;
   artistName: string;
+  spotifyTrackId?: string;
+  albumCover?: string;
   requesterName: string;
   requesterEmail?: string;
   donationAmount: number;
@@ -34,6 +36,8 @@ export interface QueueItem {
   position: number;
   songTitle: string;
   artistName: string;
+  spotifyTrackId?: string;
+  albumCover?: string;
   requesterName: string;
   requesterEmail?: string;
   donationAmount?: number;
@@ -49,6 +53,7 @@ export interface PublicQueueItem {
   position: number;
   songTitle: string;
   artistName: string;
+  albumCover?: string;
   requesterName: string;
   status: QueueStatus;
   addedAt: string;
@@ -86,6 +91,8 @@ export interface CreateRequestData {
   eventCode: string;
   songTitle: string;
   artistName: string;
+  spotifyTrackId?: string;
+  albumCover?: string;
   requesterName: string;
   requesterEmail?: string;
   donationAmount: number;

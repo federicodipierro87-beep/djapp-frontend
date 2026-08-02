@@ -134,6 +134,15 @@ const QueueItem: React.FC<QueueItemProps> = ({
           )}
         </div>
 
+        {/* Album Cover */}
+        {item.albumCover && (
+          <img
+            src={item.albumCover}
+            alt=""
+            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+          />
+        )}
+
         {/* Song Details */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
