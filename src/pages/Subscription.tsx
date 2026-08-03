@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Music, Check, Crown, Zap, ArrowLeft, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { subscriptionApi } from '../services/api';
+import { logout } from '../services/session';
 import type { SubscriptionPlan } from '../types';
 
 const Subscription: React.FC = () => {
@@ -39,7 +40,7 @@ const Subscription: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('dj_token');
+    logout();
     navigate('/dj/login');
   };
 

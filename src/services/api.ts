@@ -18,11 +18,15 @@ import type {
   UpdateEventData,
   EventStatus
 } from '../types';
+import { logout } from './session';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  // Without a timeout a stalled connection never settles, so the UI keeps
+  // showing a spinner with no way for the user to tell it is stuck.
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -40,16 +44,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('dj_token');
+      logout();
       window.location.href = '/dj/login';
     }
-    
-    // Gestione Rate Limiting con retry automatico
+
     if (error.response?.status === 429) {
-      console.warn('Rate limit raggiunto, riprovo tra 30 secondi...');
-      // React Query gestirà automaticamente il retry con i tempi che abbiamo impostato
+      console.warn('Rate limit raggiunto, React Query ritenterà automaticamente.');
     }
-    
+
+    if (error.code === 'ECONNABORTED') {
+      console.warn('Richiesta scaduta:', error.config?.url);
+    }
+
     return Promise.reject(error);
   }
 );

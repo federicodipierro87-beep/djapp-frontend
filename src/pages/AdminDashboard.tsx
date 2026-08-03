@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, Clock, Users, ArrowLeft, Trash2 } from 'lucide-re
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { adminApi } from '../services/api';
+import { logout } from '../services/session';
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
@@ -81,7 +82,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('dj_token');
+    logout();
     navigate('/');
   };
 

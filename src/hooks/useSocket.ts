@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   getSocket,
@@ -18,76 +18,74 @@ interface UseSocketOptions {
 }
 
 export function useSocket(options: UseSocketOptions) {
-  const {
-    eventCode,
-    onNewRequest,
-    onRequestAccepted,
-    onRequestRejected,
-    onQueueUpdated,
-    onNowPlayingChanged,
-  } = options;
-
+  const { eventCode } = options;
   const queryClient = useQueryClient();
 
-  // Invalidate queries to trigger refetch
+  // Callers pass inline arrow functions, so keeping them in the effect's
+  // dependency list would tear down and rebuild every listener on each render.
+  const handlers = useRef(options);
+  handlers.current = options;
+
   const invalidateRequests = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['requests'] });
-    queryClient.invalidateQueries({ queryKey: ['djRequests'] });
+    queryClient.invalidateQueries({ queryKey: ['dj-requests'] });
   }, [queryClient]);
 
   const invalidateQueue = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['queue'] });
-    queryClient.invalidateQueries({ queryKey: ['djQueue'] });
+    queryClient.invalidateQueries({ queryKey: ['dj-queue'] });
+    queryClient.invalidateQueries({ queryKey: ['dj-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['public-queue'] });
   }, [queryClient]);
 
   useEffect(() => {
     if (!eventCode) return;
 
     const socket = connectSocket();
-
-    // Join the event room
     joinEventRoom(eventCode);
 
-    // Handle new request
-    const handleNewRequest = (request: unknown) => {
+    // Rooms live on the server and are tied to a socket id, so a reconnection
+    // starts outside of them. Rejoining and refetching closes the gap of events
+    // that were emitted while the connection was down.
+    const handleConnect = () => {
+      joinEventRoom(eventCode);
       invalidateRequests();
-      onNewRequest?.(request);
+      invalidateQueue();
     };
 
-    // Handle request accepted
+    const handleNewRequest = (request: unknown) => {
+      invalidateRequests();
+      handlers.current.onNewRequest?.(request);
+    };
+
     const handleRequestAccepted = (request: unknown) => {
       invalidateRequests();
       invalidateQueue();
-      onRequestAccepted?.(request);
+      handlers.current.onRequestAccepted?.(request);
     };
 
-    // Handle request rejected
     const handleRequestRejected = (data: { requestId: string }) => {
       invalidateRequests();
-      onRequestRejected?.(data);
+      handlers.current.onRequestRejected?.(data);
     };
 
-    // Handle queue updated
     const handleQueueUpdated = () => {
       invalidateQueue();
-      onQueueUpdated?.();
+      handlers.current.onQueueUpdated?.();
     };
 
-    // Handle now playing changed
     const handleNowPlayingChanged = (song: { songTitle: string; artistName: string }) => {
       invalidateQueue();
-      onNowPlayingChanged?.(song);
+      handlers.current.onNowPlayingChanged?.(song);
     };
 
-    // Subscribe to events
+    socket.on('connect', handleConnect);
     socket.on(SOCKET_EVENTS.NEW_REQUEST, handleNewRequest);
     socket.on(SOCKET_EVENTS.REQUEST_ACCEPTED, handleRequestAccepted);
     socket.on(SOCKET_EVENTS.REQUEST_REJECTED, handleRequestRejected);
     socket.on(SOCKET_EVENTS.QUEUE_UPDATED, handleQueueUpdated);
     socket.on(SOCKET_EVENTS.NOW_PLAYING_CHANGED, handleNowPlayingChanged);
 
-    // Cleanup on unmount
     return () => {
+      socket.off('connect', handleConnect);
       socket.off(SOCKET_EVENTS.NEW_REQUEST, handleNewRequest);
       socket.off(SOCKET_EVENTS.REQUEST_ACCEPTED, handleRequestAccepted);
       socket.off(SOCKET_EVENTS.REQUEST_REJECTED, handleRequestRejected);
@@ -95,16 +93,7 @@ export function useSocket(options: UseSocketOptions) {
       socket.off(SOCKET_EVENTS.NOW_PLAYING_CHANGED, handleNowPlayingChanged);
       leaveEventRoom(eventCode);
     };
-  }, [
-    eventCode,
-    onNewRequest,
-    onRequestAccepted,
-    onRequestRejected,
-    onQueueUpdated,
-    onNowPlayingChanged,
-    invalidateRequests,
-    invalidateQueue,
-  ]);
+  }, [eventCode, invalidateRequests, invalidateQueue]);
 
   return {
     socket: getSocket(),

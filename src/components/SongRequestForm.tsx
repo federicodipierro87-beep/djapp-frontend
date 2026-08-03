@@ -197,6 +197,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
                     onChange={(e) => setFormData({ ...formData, songTitle: e.target.value })}
                     className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-xl text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
                     placeholder="Inserisci titolo canzone"
+                    maxLength={200}
                     required
                   />
                 </div>
@@ -211,6 +212,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
                     onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
                     className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-xl text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
                     placeholder="Inserisci nome artista"
+                    maxLength={200}
                     required
                   />
                 </div>
@@ -229,6 +231,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
                   onChange={(e) => setFormData({ ...formData, requesterName: e.target.value })}
                   className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-xl text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
                   placeholder="Inserisci il tuo nome"
+                  maxLength={60}
                   required
                 />
               </div>
@@ -241,6 +244,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
                   onChange={(e) => setFormData({ ...formData, requesterEmail: e.target.value })}
                   className="w-full px-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-xl text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
                   placeholder="tua@email.com"
+                  maxLength={254}
                 />
               </div>
             </div>

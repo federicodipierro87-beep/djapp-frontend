@@ -31,6 +31,10 @@ export function getSocket(): Socket {
     socket = io(SOCKET_URL, {
       autoConnect: false,
       transports: ['websocket', 'polling'],
+      // Read as a callback so a reconnection picks up the current token instead
+      // of the one that existed when the socket was first created. Guests have
+      // no token and connect anonymously to the public event room.
+      auth: (cb) => cb({ token: localStorage.getItem('dj_token') ?? undefined }),
     });
   }
   return socket;

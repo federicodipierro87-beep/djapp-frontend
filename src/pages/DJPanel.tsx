@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
+import { logout } from '../services/session';
 import DJQueue from '../components/DJQueue';
 import RequestList from '../components/RequestList';
 import EarningsCounter from '../components/EarningsCounter';
@@ -121,7 +122,7 @@ const DJPanel: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('dj_token');
+    logout();
     navigate('/');
     toast.success('Disconnesso con successo');
   };
