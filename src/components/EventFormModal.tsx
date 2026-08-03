@@ -1,35 +1,70 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, MapPin, Calendar, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { eventsApi } from '../services/api';
-import type { CreateEventData } from '../types';
+import type { CreateEventData, Event } from '../types';
 
-interface CreateEventModalProps {
+interface EventFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** When set the modal edits that event instead of creating a new one. */
+  event?: Event | null;
 }
 
-const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) => {
-  const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<CreateEventData>({
-    name: '',
-    description: '',
-    address: '',
-    dateTime: '',
-  });
+const emptyForm: CreateEventData = {
+  name: '',
+  description: '',
+  address: '',
+  dateTime: '',
+  endDateTime: '',
+};
 
-  const createMutation = useMutation({
-    mutationFn: eventsApi.create,
-    onSuccess: (event) => {
-      toast.success(`Evento "${event.name}" creato!`);
+/**
+ * The stored timestamp is a wall clock time that was saved without a zone, so it
+ * has to be read back the same way. Rebuilding it from local components would
+ * move the event by the browser's offset, and that shift would compound on
+ * every subsequent save.
+ */
+const toInputValue = (iso?: string): string =>
+  iso ? new Date(iso).toISOString().slice(0, 16) : '';
+
+const buildForm = (event?: Event | null): CreateEventData =>
+  event
+    ? {
+        name: event.name,
+        description: event.description ?? '',
+        address: event.address,
+        dateTime: toInputValue(event.dateTime),
+        endDateTime: toInputValue(event.endDateTime),
+      }
+    : { ...emptyForm };
+
+const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event }) => {
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<CreateEventData>(emptyForm);
+  const isEdit = Boolean(event);
+
+  const eventRef = useRef(event);
+  eventRef.current = event;
+
+  useEffect(() => {
+    if (isOpen) setFormData(buildForm(eventRef.current));
+    // Keyed on the id rather than the event object: refetching my-events hands
+    // back a new object every time, which would wipe whatever is being typed.
+  }, [isOpen, event?.id]);
+
+  const saveMutation = useMutation({
+    mutationFn: (data: CreateEventData) =>
+      event ? eventsApi.update(event.id, data) : eventsApi.create(data),
+    onSuccess: (saved) => {
+      toast.success(`Evento "${saved.name}" ${isEdit ? 'aggiornato' : 'creato'}!`);
       queryClient.invalidateQueries({ queryKey: ['my-events'] });
-      setFormData({ name: '', description: '', address: '', dateTime: '' });
       onClose();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Errore nella creazione evento';
-      toast.error(message);
+      const fallback = isEdit ? 'Errore nella modifica evento' : 'Errore nella creazione evento';
+      toast.error(error.response?.data?.error || fallback);
     },
   });
 
@@ -41,7 +76,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
       return;
     }
 
-    createMutation.mutate(formData);
+    saveMutation.mutate(formData);
   };
 
   if (!isOpen) return null;
@@ -56,7 +91,9 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
 
         <div className="relative bg-white rounded-xl shadow-xl max-w-lg w-full p-6 transform transition-all">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Crea Nuovo Evento</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {isEdit ? 'Modifica Evento' : 'Crea Nuovo Evento'}
+            </h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -76,6 +113,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="es. Serata Latina @ Club Paradise"
                 className="input-field"
+                maxLength={120}
                 required
               />
             </div>
@@ -90,6 +128,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 placeholder="Descrivi brevemente l'evento..."
                 className="input-field resize-none"
                 rows={3}
+                maxLength={1000}
               />
             </div>
 
@@ -104,6 +143,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="es. Via Roma 123, Milano"
                 className="input-field"
+                maxLength={250}
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -148,10 +188,16 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
               </button>
               <button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 className="btn-primary flex-1"
               >
-                {createMutation.isPending ? 'Creazione...' : 'Crea Evento'}
+                {saveMutation.isPending
+                  ? isEdit
+                    ? 'Salvataggio...'
+                    : 'Creazione...'
+                  : isEdit
+                    ? 'Salva Modifiche'
+                    : 'Crea Evento'}
               </button>
             </div>
           </form>
@@ -161,4 +207,4 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
   );
 };
 
-export default CreateEventModal;
+export default EventFormModal;

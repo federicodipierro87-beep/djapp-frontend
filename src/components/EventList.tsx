@@ -16,7 +16,7 @@ import {
 import toast from 'react-hot-toast';
 import { eventsApi } from '../services/api';
 import type { Event, EventStatus } from '../types';
-import CreateEventModal from './CreateEventModal';
+import EventFormModal from './EventFormModal';
 
 const statusColors: Record<EventStatus, { bg: string; text: string; label: string }> = {
   SCHEDULED: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Programmato' },
@@ -26,8 +26,20 @@ const statusColors: Record<EventStatus, { bg: string; text: string; label: strin
 };
 
 const EventList: React.FC = () => {
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // One modal serves both jobs: null means "create", an event means "edit".
+  const [modalOpen, setModalOpen] = useState(false);
+  const [eventBeingEdited, setEventBeingEdited] = useState<Event | null>(null);
   const queryClient = useQueryClient();
+
+  const openCreate = () => {
+    setEventBeingEdited(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (event: Event) => {
+    setEventBeingEdited(event);
+    setModalOpen(true);
+  };
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['my-events'],
@@ -120,7 +132,7 @@ const EventList: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900">I Miei Eventi</h2>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={openCreate}
           className="btn-primary flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -134,7 +146,7 @@ const EventList: React.FC = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">Nessun evento</h3>
           <p className="text-gray-600 mb-4">Crea il tuo primo evento per iniziare a ricevere richieste</p>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={openCreate}
             className="btn-primary"
           >
             <Plus className="w-4 h-4 mr-2 inline" />
@@ -221,6 +233,16 @@ const EventList: React.FC = () => {
                       </button>
                     )}
 
+                    {event.status === 'SCHEDULED' && (
+                      <button
+                        onClick={() => openEdit(event)}
+                        className="btn-secondary flex items-center text-sm"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Modifica
+                      </button>
+                    )}
+
                     {(event.status === 'SCHEDULED' || event.status === 'CANCELLED') && (
                       <button
                         onClick={() => handleDelete(event)}
@@ -239,9 +261,10 @@ const EventList: React.FC = () => {
         </div>
       )}
 
-      <CreateEventModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+      <EventFormModal
+        isOpen={modalOpen}
+        event={eventBeingEdited}
+        onClose={() => setModalOpen(false)}
       />
     </div>
   );
