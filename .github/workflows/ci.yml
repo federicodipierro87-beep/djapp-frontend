@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # build runs `tsc && vite build`, so this covers typechecking too.
+      # `npm run lint` is deliberately absent: the repo has no eslint config yet,
+      # so the script fails before it looks at any source file.
+      - run: npm run build
