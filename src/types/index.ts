@@ -194,7 +194,7 @@ export interface CreateEventData {
   description?: string;
   address: string;
   dateTime: string;
-  endDateTime?: string;
+  endDateTime?: string | null;
 }
 
 export interface UpdateEventData {
@@ -202,5 +202,6 @@ export interface UpdateEventData {
   description?: string;
   address?: string;
   dateTime?: string;
-  endDateTime?: string;
+  /** null clears the stored end date; omitting it leaves the current one. */
+  endDateTime?: string | null;
 }

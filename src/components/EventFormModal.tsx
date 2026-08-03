@@ -95,7 +95,9 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event 
     saveMutation.mutate({
       ...formData,
       dateTime: toInstant(formData.dateTime),
-      endDateTime: formData.endDateTime ? toInstant(formData.endDateTime) : undefined,
+      // Emptying the field is a decision, so it has to be sent as one. Dropping
+      // it from the payload would look exactly like not having touched it.
+      endDateTime: formData.endDateTime ? toInstant(formData.endDateTime) : null,
     });
   };
 
