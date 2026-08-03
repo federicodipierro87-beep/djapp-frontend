@@ -20,14 +20,30 @@ const emptyForm: CreateEventData = {
   endDateTime: '',
 };
 
+const pad = (n: number) => String(n).padStart(2, '0');
+
 /**
- * The stored timestamp is a wall clock time that was saved without a zone, so it
- * has to be read back the same way. Rebuilding it from local components would
- * move the event by the browser's offset, and that shift would compound on
- * every subsequent save.
+ * A datetime-local field carries no zone, so both directions have to name one.
+ * The browser's zone is the only one that means anything to the DJ typing, and
+ * these two functions have to stay exact inverses: reading a value back under a
+ * different rule than it was written with would shift the event on every save.
  */
-const toInputValue = (iso?: string): string =>
-  iso ? new Date(iso).toISOString().slice(0, 16) : '';
+const toInputValue = (iso?: string): string => {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+};
+
+/**
+ * The server has no way to know the DJ's zone, so it must not be handed a bare
+ * wall clock to interpret: it would resolve it against its own zone, which is
+ * UTC in production.
+ */
+const toInstant = (inputValue: string): string => new Date(inputValue).toISOString();
 
 const buildForm = (event?: Event | null): CreateEventData =>
   event
@@ -76,7 +92,11 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event 
       return;
     }
 
-    saveMutation.mutate(formData);
+    saveMutation.mutate({
+      ...formData,
+      dateTime: toInstant(formData.dateTime),
+      endDateTime: formData.endDateTime ? toInstant(formData.endDateTime) : undefined,
+    });
   };
 
   if (!isOpen) return null;
