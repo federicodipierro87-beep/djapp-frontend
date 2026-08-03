@@ -1,10 +1,12 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   getSocket,
   connectSocket,
   joinEventRoom,
   leaveEventRoom,
+  onConnectionChange,
+  isSocketConnected,
   SOCKET_EVENTS,
 } from '../services/socket';
 
@@ -25,6 +27,12 @@ export function useSocket(options: UseSocketOptions) {
   // dependency list would tear down and rebuild every listener on each render.
   const handlers = useRef(options);
   handlers.current = options;
+
+  // Exposed so the panel can both say so on screen and fall back to a tighter
+  // polling interval while live updates are not arriving.
+  const [isConnected, setIsConnected] = useState(isSocketConnected);
+
+  useEffect(() => onConnectionChange(setIsConnected), []);
 
   const invalidateRequests = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['dj-requests'] });
@@ -97,6 +105,7 @@ export function useSocket(options: UseSocketOptions) {
 
   return {
     socket: getSocket(),
+    isConnected,
     invalidateRequests,
     invalidateQueue,
   };

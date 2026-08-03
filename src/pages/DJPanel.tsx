@@ -27,6 +27,7 @@ import QRCodeModal from '../components/QRCodeModal';
 import SubscriptionStatus from '../components/SubscriptionStatus';
 import EventList from '../components/EventList';
 import { useSocket } from '../hooks/useSocket';
+import RealtimeStatus from '../components/RealtimeStatus';
 
 const DJPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'events' | 'settings' | 'profile'>('requests');
@@ -62,30 +63,36 @@ const DJPanel: React.FC = () => {
     }
   }, [subscriptionStatus, subscriptionLoading, navigate]);
 
+  // Declared before the queries below because their polling interval depends on
+  // whether live updates are currently arriving.
+  const { isConnected: realtimeConnected } = useSocket({
+    eventCode: djData?.eventCode || '',
+    onNewRequest: () => {
+      toast('Nuova richiesta ricevuta!', { icon: '🎵' });
+    },
+  });
+
+  // Socket.io is what delivers a new request within the second; polling is only
+  // the safety net for when it is not connected, so it tightens up exactly then.
+  // Three queries at 15s is 180 requests per 15 minutes, well inside the limit.
+  const fallbackPollMs = realtimeConnected ? 60000 : 15000;
+
   const { data: requests, refetch: refetchRequests } = useQuery({
     queryKey: ['dj-requests'],
     queryFn: requestsApi.getDJRequests,
-    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
+    refetchInterval: fallbackPollMs,
   });
 
   const { data: queueData, refetch: refetchQueue } = useQuery({
     queryKey: ['dj-queue'],
     queryFn: queueApi.getDJ,
-    refetchInterval: 60000, // Fallback polling ridotto, Socket.io gestisce updates real-time
+    refetchInterval: fallbackPollMs,
   });
 
   const { data: stats } = useQuery({
     queryKey: ['dj-stats'],
     queryFn: djApi.getStats,
-    refetchInterval: 60000,
-  });
-
-  // Socket.io real-time updates
-  useSocket({
-    eventCode: djData?.eventCode || '',
-    onNewRequest: () => {
-      toast('Nuova richiesta ricevuta!', { icon: '🎵' });
-    },
+    refetchInterval: fallbackPollMs,
   });
 
   const newEventMutation = useMutation({
@@ -202,7 +209,10 @@ const DJPanel: React.FC = () => {
                     <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
                   </button>
                   <div>
-                    <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
+                      <RealtimeStatus connected={realtimeConnected} />
+                    </div>
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-base sm:text-lg text-primary-800">{djData.eventCode}</span>
                       <button

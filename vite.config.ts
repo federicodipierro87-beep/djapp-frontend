@@ -1,9 +1,25 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+
+// Changes on every build. The bundle carries it as __BUILD_ID__ and also serves
+// it at /version.json, so a tab left open can tell that it is running code that
+// has since been replaced.
+const buildId = Date.now().toString(36)
+
+const emitBuildId = (): Plugin => ({
+  name: 'emit-build-id',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: JSON.stringify({ buildId })
+    })
+  }
+})
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), emitBuildId()],
   server: {
     port: 5173,
     host: true
@@ -13,6 +29,7 @@ export default defineConfig({
     sourcemap: true
   },
   define: {
-    'process.env': {}
+    'process.env': {},
+    __BUILD_ID__: JSON.stringify(buildId)
   }
 })

@@ -11,6 +11,7 @@ import DJPanel from './pages/DJPanel';
 import AdminDashboard from './pages/AdminDashboard';
 import Subscription from './pages/Subscription';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
+import UpdateBanner from './components/UpdateBanner';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
@@ -37,6 +38,7 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <UpdateBanner />
         </div>
       {/* </PayPalScriptProvider> */}
     </Elements>
