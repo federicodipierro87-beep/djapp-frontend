@@ -189,6 +189,15 @@ export interface Event {
   distance?: number;
 }
 
+// What an unauthenticated guest is allowed to know about an event code.
+export interface PublicEventInfo {
+  eventCode: string;
+  eventName: string | null;
+  djName: string;
+  minDonation: number;
+  isAcceptingRequests: boolean;
+}
+
 export interface CreateEventData {
   name: string;
   description?: string;

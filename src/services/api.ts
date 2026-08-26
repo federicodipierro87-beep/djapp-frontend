@@ -14,6 +14,7 @@ import type {
   PortalSessionResponse,
   SubscriptionPlan,
   Event,
+  PublicEventInfo,
   CreateEventData,
   UpdateEventData,
   EventStatus
@@ -245,6 +246,13 @@ export const eventsApi = {
 
   getByCode: async (eventCode: string): Promise<Event> => {
     const response = await api.get(`/events/code/${eventCode}`);
+    return response.data;
+  },
+
+  // Resolves both the new event codes and the legacy per-DJ ones, so the
+  // request form can read the real minimum donation instead of guessing.
+  getPublicInfo: async (eventCode: string): Promise<PublicEventInfo> => {
+    const response = await api.get(`/events/public/${eventCode}`);
     return response.data;
   },
 

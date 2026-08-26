@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { X, CreditCard, Smartphone, DollarSign, Music, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { requestsApi, djApi } from '../services/api';
+import { requestsApi, eventsApi } from '../services/api';
 import PaymentForm from './PaymentForm';
 import DonationSlider from './DonationSlider';
 import SpotifySearch from './SpotifySearch';
@@ -27,18 +27,20 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     spotifyTrackId: '',
     albumCover: '',
   });
-  const [donationAmount, setDonationAmount] = useState(5);
+  const [donationAmount, setDonationAmount] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showSpotifySearch, setShowSpotifySearch] = useState(false);
 
-  // Get DJ settings to know minimum donation
-  const { data: djData } = useQuery({
-    queryKey: ['dj-by-event', eventCode],
-    queryFn: async () => {
-      return { minDonation: 5 };
-    },
+  // The server enforces this too, but showing the DJ's real floor is the
+  // difference between a slider that works and one that fails on submit.
+  const { data: eventInfo, isLoading: eventInfoLoading } = useQuery({
+    queryKey: ['public-event-info', eventCode],
+    queryFn: () => eventsApi.getPublicInfo(eventCode),
   });
+
+  const minDonation = eventInfo?.minDonation;
+  const effectiveAmount = donationAmount ?? minDonation ?? 0;
 
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
@@ -60,8 +62,13 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       return;
     }
 
-    if (donationAmount < (djData?.minDonation || 5)) {
-      toast.error(`Donazione minima è €${djData?.minDonation || 5}`);
+    if (minDonation === undefined) {
+      toast.error('Impossibile leggere le impostazioni dell\'evento, riprova');
+      return;
+    }
+
+    if (effectiveAmount < minDonation) {
+      toast.error(`Donazione minima è €${minDonation}`);
       return;
     }
 
@@ -77,7 +84,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       albumCover: formData.albumCover || undefined,
       requesterName: formData.requesterName,
       requesterEmail: formData.requesterEmail || undefined,
-      donationAmount,
+      donationAmount: effectiveAmount,
       paymentMethod,
       paymentIntentId
     };
@@ -97,9 +104,10 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     setShowSpotifySearch(false);
   };
 
+  // Satispay and PayPal are not offered until their integrations are real:
+  // showing a method that cannot take money is worse than not showing it.
   const paymentMethods = [
     { id: 'CARD' as PaymentMethod, name: 'Carta', icon: CreditCard },
-    { id: 'SATISPAY' as PaymentMethod, name: 'Satispay', icon: Smartphone },
     { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
     { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },
   ];
@@ -131,7 +139,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
         {showPaymentForm ? (
           <PaymentForm
-            amount={donationAmount}
+            amount={effectiveAmount}
             paymentMethod={paymentMethod}
             onSuccess={handlePaymentSuccess}
             onCancel={() => setShowPaymentForm(false)}
@@ -251,12 +259,20 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
             {/* Donation Amount */}
             <div className="bg-black/40 border border-green-400/30 rounded-xl p-4">
-              <DonationSlider
-                amount={donationAmount}
-                onChange={setDonationAmount}
-                min={djData?.minDonation || 5}
-                max={100}
-              />
+              {minDonation === undefined ? (
+                <p className="text-green-200/60 text-sm text-center py-4">
+                  {eventInfoLoading
+                    ? 'Caricamento importo minimo...'
+                    : 'Importo minimo non disponibile, riprova più tardi'}
+                </p>
+              ) : (
+                <DonationSlider
+                  amount={effectiveAmount}
+                  onChange={setDonationAmount}
+                  min={minDonation}
+                  max={100}
+                />
+              )}
             </div>
 
             {/* Payment Method */}
@@ -304,7 +320,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
               </button>
               <button
                 type="submit"
-                disabled={createRequestMutation.isPending}
+                disabled={createRequestMutation.isPending || minDonation === undefined}
                 className="flex-1 bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-xl hover:from-green-400 hover:to-green-300 transition-all duration-300 shadow-lg shadow-green-400/30 disabled:opacity-50"
               >
                 {createRequestMutation.isPending ? 'Invio...' : 'Continua al Pagamento'}
