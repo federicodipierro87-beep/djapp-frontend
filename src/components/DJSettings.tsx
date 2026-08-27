@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2 } from 'lucide-react';
+import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2, CheckCircle2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
 import type { DJ, EventSummary } from '../types';
@@ -10,12 +10,106 @@ interface DJSettingsProps {
   onUpdate: () => void;
 }
 
+// Where the DJ's account id used to be a text field they filled in themselves.
+// It is now read-only here and written only by Stripe's own onboarding, because
+// it decides where their guests' money is sent.
+const StripeConnectPanel: React.FC = () => {
+  const { data: status, isLoading } = useQuery({
+    queryKey: ['connectStatus'],
+    queryFn: djApi.getConnectStatus,
+  });
+
+  const onboardMutation = useMutation({
+    mutationFn: djApi.startConnectOnboarding,
+    onSuccess: ({ url }) => {
+      // Onboarding is hosted by Stripe: identity documents and bank details
+      // never pass through this app.
+      window.location.href = url;
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Impossibile aprire la configurazione Stripe');
+    },
+  });
+
+  if (isLoading || !status) {
+    return (
+      <div className="h-24 rounded-lg bg-gray-50 border border-gray-200 animate-pulse" />
+    );
+  }
+
+  const complete = status.onboardingComplete;
+  // An account can exist and still not be able to charge: Stripe holds it until
+  // it has verified who the DJ is.
+  const started = Boolean(status.accountId) && !complete;
+
+  return (
+    <div
+      className={`p-4 rounded-lg border ${
+        complete ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center mb-1">
+            {complete ? (
+              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-amber-600 mr-2" />
+            )}
+            <h4 className={`font-medium ${complete ? 'text-green-900' : 'text-amber-900'}`}>
+              {complete ? 'Incassi attivi' : started ? 'Verifica da completare' : 'Incassi da configurare'}
+            </h4>
+          </div>
+
+          <p className={`text-sm ${complete ? 'text-green-800' : 'text-amber-800'}`}>
+            {complete
+              ? 'Le donazioni dei tuoi ospiti arrivano direttamente sul tuo conto Stripe.'
+              : started
+              ? 'Stripe non ha ancora finito di verificare il tuo account: riprendi dove avevi lasciato.'
+              : 'Collega un conto Stripe per ricevere le donazioni direttamente.'}
+          </p>
+
+          {complete && !status.payoutsEnabled && (
+            <p className="text-sm text-green-800 mt-2">
+              I bonifici verso il tuo conto bancario non sono ancora attivi: Stripe trattiene
+              gli incassi finché non completi gli ultimi dati richiesti.
+            </p>
+          )}
+
+          {/* Only worth alarming them about once it actually blocks guests. */}
+          {status.required && !complete && (
+            <p className="text-sm font-medium text-amber-900 mt-2">
+              Finché non completi questo passaggio i tuoi ospiti non possono pagare le richieste.
+            </p>
+          )}
+
+          {status.accountId && (
+            <p className="text-xs text-gray-500 mt-2 font-mono">{status.accountId}</p>
+          )}
+        </div>
+
+        {/* Nothing left to ask Stripe for once charges and payouts are both on,
+            so the link is offered only while something is still missing. */}
+        {!(complete && status.payoutsEnabled) && (
+          <button
+            onClick={() => onboardMutation.mutate()}
+            disabled={onboardMutation.isPending}
+            className="btn-secondary flex items-center whitespace-nowrap"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            {onboardMutation.isPending ? 'Apertura...' : status.accountId ? 'Riprendi' : 'Configura'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: dj.name,
     minDonation: dj.minDonation,
-    stripeAccountId: dj.stripeAccountId || '',
     paypalEmail: dj.paypalEmail || '',
     satispayId: dj.satispayId || '',
   });
@@ -43,7 +137,6 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     updateMutation.mutate({
       name: formData.name,
       minDonation: formData.minDonation,
-      stripeAccountId: formData.stripeAccountId || undefined,
       paypalEmail: formData.paypalEmail || undefined,
       satispayId: formData.satispayId || undefined,
     });
@@ -266,19 +359,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
         </div>
 
         <div className="space-y-6">
-          <div>
-            <label className="form-label">Stripe Account ID (Optional)</label>
-            <input
-              type="text"
-              value={formData.stripeAccountId}
-              onChange={(e) => setFormData({ ...formData, stripeAccountId: e.target.value })}
-              className="form-input"
-              placeholder="acct_1234567890"
-            />
-            <p className="text-sm text-gray-600 mt-1">
-              Connect your Stripe account to receive payments directly
-            </p>
-          </div>
+          <StripeConnectPanel />
 
           <div>
             <label className="form-label">PayPal Email (Optional)</label>
@@ -310,11 +391,11 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">Payment Integration Notes:</h4>
+          <h4 className="font-medium text-blue-900 mb-2">Come funzionano gli incassi:</h4>
           <ul className="text-blue-800 text-sm space-y-1">
-            <li>• Payment accounts are optional but recommended for automatic payouts</li>
-            <li>• Without payment integration, you'll need to handle payments manually</li>
-            <li>• Contact support for help setting up payment integrations</li>
+            <li>• Le donazioni vengono trattenute sulla carta dell'ospite e addebitate solo quando suoni la canzone</li>
+            <li>• Con Stripe collegato l'importo arriva sul tuo conto, non sul nostro</li>
+            <li>• PayPal e Satispay non sono ancora attivi</li>
           </ul>
         </div>
       </div>

@@ -14,6 +14,17 @@ export interface DJ {
   updatedAt?: string;
 }
 
+// Where the DJ stands with Stripe Connect. `required` mirrors the server's
+// feature flag: until it is on, onboarding is something they can do rather
+// than something guests are blocked by.
+export interface ConnectStatus {
+  required: boolean;
+  accountId: string | null;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  onboardingComplete: boolean;
+}
+
 export interface Request {
   id: string;
   songTitle: string;

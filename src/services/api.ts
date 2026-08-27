@@ -17,7 +17,8 @@ import type {
   PublicEventInfo,
   CreateEventData,
   UpdateEventData,
-  EventStatus
+  EventStatus,
+  ConnectStatus
 } from '../types';
 import { logout } from './session';
 
@@ -184,6 +185,18 @@ export const djApi = {
 
   generateQRCode: async (): Promise<{ qrCode: string; eventCode: string; eventUrl: string }> => {
     const response = await api.get('/dj/qr-code');
+    return response.data;
+  },
+
+  getConnectStatus: async (): Promise<ConnectStatus> => {
+    const response = await api.get('/dj/connect/status');
+    return response.data;
+  },
+
+  // Returns a single-use Stripe-hosted onboarding link. Starts the process or
+  // resumes it; the DJ is sent off to Stripe and comes back to the panel.
+  startConnectOnboarding: async (): Promise<{ url: string; expiresAt: number }> => {
+    const response = await api.post('/dj/connect/onboard');
     return response.data;
   },
 };
