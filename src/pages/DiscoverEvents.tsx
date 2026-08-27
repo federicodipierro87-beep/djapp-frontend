@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -15,8 +15,11 @@ import {
 } from 'lucide-react';
 import { eventsApi } from '../services/api';
 import { useGeolocation } from '../hooks/useGeolocation';
-import EventMap from '../components/EventMap';
 import type { Event, EventStatus } from '../types';
+
+// Leaflet and its stylesheet are the single largest thing the app ships, and
+// this is the only page that draws a map.
+const EventMap = lazy(() => import('../components/EventMap'));
 
 const radiusOptions = [
   { value: 5, label: '5 km' },
@@ -224,12 +227,21 @@ const DiscoverEvents: React.FC = () => {
               {/* Map */}
               <div className="lg:col-span-2">
                 <div className="bg-green-900/20 backdrop-blur-lg rounded-2xl border border-green-400/30 overflow-hidden shadow-2xl shadow-green-400/10" style={{ height: '500px' }}>
-                  <EventMap
-                    events={events || []}
-                    userLocation={currentLocation}
-                    onEventSelect={handleEventSelect}
-                    center={currentLocation ? [currentLocation.lat, currentLocation.lng] : undefined}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="h-full flex items-center justify-center text-green-300/70">
+                        <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                        Caricamento mappa...
+                      </div>
+                    }
+                  >
+                    <EventMap
+                      events={events || []}
+                      userLocation={currentLocation}
+                      onEventSelect={handleEventSelect}
+                      center={currentLocation ? [currentLocation.lat, currentLocation.lng] : undefined}
+                    />
+                  </Suspense>
                 </div>
               </div>
 

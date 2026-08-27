@@ -1,6 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 // import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 import Home from './pages/Home';
@@ -13,17 +11,17 @@ import Subscription from './pages/Subscription';
 import SubscriptionSuccess from './pages/SubscriptionSuccess';
 import UpdateBanner from './components/UpdateBanner';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
-
 // const paypalOptions = {
 //   "clientId": import.meta.env.VITE_PAYPAL_CLIENT_ID || '',
 //   currency: "EUR",
 //   intent: "authorize",
 // };
 
+// Stripe is no longer set up here. Its provider lives next to the payment form,
+// which is the only thing that ever needed it.
 function App() {
   return (
-    <Elements stripe={stripePromise}>
+    <>
       {/* PayPal temporarily disabled */}
       {/* <PayPalScriptProvider options={paypalOptions}> */}
         <div className="min-h-screen bg-gray-50">
@@ -41,7 +39,7 @@ function App() {
           <UpdateBanner />
         </div>
       {/* </PayPalScriptProvider> */}
-    </Elements>
+    </>
   );
 }
 

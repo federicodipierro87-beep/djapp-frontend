@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -18,7 +18,6 @@ import {
 import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
 import { logout } from '../services/session';
-import DJQueue from '../components/DJQueue';
 import RequestList from '../components/RequestList';
 import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
@@ -28,6 +27,10 @@ import SubscriptionStatus from '../components/SubscriptionStatus';
 import EventList from '../components/EventList';
 import { useSocket } from '../hooks/useSocket';
 import RealtimeStatus from '../components/RealtimeStatus';
+
+// Drag and drop is only needed once the DJ opens the queue tab, and it brings
+// the whole of dnd-kit with it.
+const DJQueue = lazy(() => import('../components/DJQueue'));
 
 const DJPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'events' | 'settings' | 'profile'>('requests');
@@ -79,7 +82,7 @@ const DJPanel: React.FC = () => {
 
   const { data: requests, refetch: refetchRequests } = useQuery({
     queryKey: ['dj-requests'],
-    queryFn: requestsApi.getDJRequests,
+    queryFn: () => requestsApi.getDJRequests({ status: 'PENDING' }),
     refetchInterval: fallbackPollMs,
   });
 
@@ -154,6 +157,11 @@ const DJPanel: React.FC = () => {
   };
 
   const pendingRequests = requests?.filter(r => r.status === 'PENDING') || [];
+
+  // The badge counts songs still to play. It used to count the whole array,
+  // which also holds the songs already played, so it only ever grew.
+  const waitingSongs =
+    queueData?.queue.filter(item => item.status === 'WAITING' || item.status === 'NOW_PLAYING') || [];
 
   if (djLoading) {
     return (
@@ -350,9 +358,9 @@ const DJPanel: React.FC = () => {
             >
               <span className="hidden sm:inline">Coda Canzoni</span>
               <span className="sm:hidden">Coda</span>
-              {queueData && queueData.queue.length > 0 && (
+              {waitingSongs.length > 0 && (
                 <span className="ml-1 sm:ml-2 bg-primary-100 text-primary-800 text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                  {queueData.queue.length}
+                  {waitingSongs.length}
                 </span>
               )}
             </button>
@@ -407,11 +415,13 @@ const DJPanel: React.FC = () => {
         )}
         
         {activeTab === 'queue' && queueData && (
-          <DJQueue 
-            queue={queueData.queue} 
-            totalEarnings={queueData.totalEarnings}
-            onUpdate={refetchQueue}
-          />
+          <Suspense fallback={<p className="text-gray-500">Caricamento coda...</p>}>
+            <DJQueue
+              queue={queueData.queue}
+              totalEarnings={queueData.totalEarnings}
+              onUpdate={refetchQueue}
+            />
+          </Suspense>
         )}
         
         {activeTab === 'events' && (

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { X, CreditCard, Smartphone, DollarSign, Music, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { requestsApi, eventsApi } from '../services/api';
-import PaymentForm from './PaymentForm';
 import DonationSlider from './DonationSlider';
 import SpotifySearch from './SpotifySearch';
 import type { CreateRequestData, PaymentMethod } from '../types';
+
+// Fetched when the guest reaches the payment step, not when the page loads.
+const StripePayment = lazy(() => import('./StripePayment'));
 
 interface SongRequestFormProps {
   eventCode: string;
@@ -159,15 +161,19 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
         </div>
 
         {pendingPayment ? (
-          <PaymentForm
-            amount={effectiveAmount}
-            paymentMethod={paymentMethod}
-            clientSecret={pendingPayment.clientSecret}
-            onSuccess={() => confirmRequestMutation.mutate(pendingPayment.requestId)}
-            // Abandoning here leaves an unpaid request behind; the server
-            // discards it, and its authorisation, on the next sweep.
-            onCancel={() => setPendingPayment(null)}
-          />
+          <Suspense
+            fallback={<p className="p-6 text-center text-green-200/70">Caricamento pagamento...</p>}
+          >
+            <StripePayment
+              amount={effectiveAmount}
+              paymentMethod={paymentMethod}
+              clientSecret={pendingPayment.clientSecret}
+              onSuccess={() => confirmRequestMutation.mutate(pendingPayment.requestId)}
+              // Abandoning here leaves an unpaid request behind; the server
+              // discards it, and its authorisation, on the next sweep.
+              onCancel={() => setPendingPayment(null)}
+            />
+          </Suspense>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Spotify Search Button */}

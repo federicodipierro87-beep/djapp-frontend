@@ -98,8 +98,10 @@ export const requestsApi = {
     return response.data;
   },
 
-  getDJRequests: async (): Promise<Request[]> => {
-    const response = await api.get('/requests/dj/all');
+  // The panel only ever renders pending requests, and asking for them by name
+  // means the page size cannot be filled up by months of old ones.
+  getDJRequests: async (params?: { status?: string; limit?: number }): Promise<Request[]> => {
+    const response = await api.get('/requests/dj/all', { params });
     return response.data;
   },
 

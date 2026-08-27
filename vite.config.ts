@@ -18,7 +18,7 @@ const emitBuildId = (): Plugin => ({
 })
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), emitBuildId()],
   server: {
     port: 5173,
@@ -26,10 +26,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    // Production used to ship a readable copy of the whole source tree next to
+    // the bundle, and pay to upload it on every deploy.
+    sourcemap: mode !== 'production'
   },
   define: {
     'process.env': {},
     __BUILD_ID__: JSON.stringify(buildId)
   }
-})
+}))
