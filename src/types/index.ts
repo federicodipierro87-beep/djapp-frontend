@@ -97,16 +97,24 @@ export interface CreateRequestData {
   requesterEmail?: string;
   donationAmount: number;
   paymentMethod: PaymentMethod;
-  paymentIntentId?: string;
 }
 
-export interface PaymentIntent {
-  clientSecret?: string;
-  paymentIntentId?: string;
-  orderId?: string;
-  approvalUrl?: string;
-  paymentId?: string;
-  redirectUrl?: string;
+// How the guest is told to pay for the request the server has just created.
+// Which field is set depends on the provider.
+export interface PaymentInstructions {
+  provider: 'STRIPE' | 'PAYPAL' | 'SATISPAY';
+  clientSecret: string | null;
+  approvalUrl: string | null;
+  redirectUrl: string | null;
+}
+
+// The request exists but is invisible to the DJ until the payment is confirmed.
+export interface CreateRequestResponse {
+  requestId: string;
+  status: 'AWAITING_PAYMENT';
+  payment: PaymentInstructions;
+  expiresAt: string;
+  createdAt: string;
 }
 
 export type PaymentMethod = 'CARD' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'PAYPAL' | 'SATISPAY';

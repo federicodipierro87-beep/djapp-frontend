@@ -7,8 +7,8 @@ import type {
   EventStats,
   EventSummary,
   CreateRequestData,
+  CreateRequestResponse,
   AuthResponse,
-  PaymentIntent,
   SubscriptionStatusResponse,
   CheckoutSessionResponse,
   PortalSessionResponse,
@@ -81,8 +81,15 @@ export const authApi = {
 
 // Requests API
 export const requestsApi = {
-  create: async (data: CreateRequestData): Promise<Request> => {
+  // The request is created first and the server hands back what is needed to
+  // pay for it. Nothing reaches the DJ until confirm() succeeds.
+  create: async (data: CreateRequestData): Promise<CreateRequestResponse> => {
     const response = await api.post('/requests', data);
+    return response.data;
+  },
+
+  confirm: async (requestId: string): Promise<{ requestId: string; status: string }> => {
+    const response = await api.post(`/requests/${requestId}/confirm`);
     return response.data;
   },
 
@@ -175,24 +182,6 @@ export const djApi = {
 
   generateQRCode: async (): Promise<{ qrCode: string; eventCode: string; eventUrl: string }> => {
     const response = await api.get('/dj/qr-code');
-    return response.data;
-  },
-};
-
-// Payment API
-export const paymentApi = {
-  createStripeIntent: async (amount: number, currency = 'eur'): Promise<PaymentIntent> => {
-    const response = await api.post('/payments/stripe/create-intent', { amount, currency });
-    return response.data;
-  },
-
-  createPayPalOrder: async (amount: number, currency = 'EUR'): Promise<PaymentIntent> => {
-    const response = await api.post('/payments/paypal/create-order', { amount, currency });
-    return response.data;
-  },
-
-  createSatispayPayment: async (amount: number, currency = 'EUR', description = 'DJ Song Request'): Promise<PaymentIntent> => {
-    const response = await api.post('/payments/satispay/create', { amount, currency, description });
     return response.data;
   },
 };

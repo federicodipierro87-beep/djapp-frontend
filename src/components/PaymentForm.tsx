@@ -1,34 +1,33 @@
 import React, { useState } from 'react';
 import { useElements, useStripe, CardElement } from '@stripe/react-stripe-js';
 import { Smartphone, AlertCircle } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import { paymentApi } from '../services/api';
 import type { PaymentMethod } from '../types';
 
 interface PaymentFormProps {
   amount: number;
   paymentMethod: PaymentMethod;
-  onSuccess: (paymentIntentId: string) => void;
+  // Issued by the server for the request this payment belongs to. The form no
+  // longer creates its own intent: an authorisation that is not tied to a
+  // request is money nobody can collect.
+  clientSecret: string;
+  onSuccess: () => void;
   onCancel: () => void;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ 
-  amount, 
-  paymentMethod, 
-  onSuccess, 
-  onCancel 
+const PaymentForm: React.FC<PaymentFormProps> = ({
+  amount,
+  paymentMethod,
+  clientSecret,
+  onSuccess,
+  onCancel
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  
+
   const stripe = useStripe();
   const elements = useElements();
 
-  const stripeIntentMutation = useMutation({
-    mutationFn: (amount: number) => paymentApi.createStripeIntent(amount),
-  });
-
-  const handleStripePayment = async () => {
+  const authorize = async (billingName?: string) => {
     if (!stripe || !elements) {
       setPaymentError('Stripe not loaded');
       return;
@@ -38,12 +37,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     setPaymentError(null);
 
     try {
-      const { clientSecret } = await stripeIntentMutation.mutateAsync(amount);
-      
-      if (!clientSecret) {
-        throw new Error('Failed to create payment intent');
-      }
-
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         throw new Error('Card element not found');
@@ -52,57 +45,18 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
+          ...(billingName ? { billing_details: { name: billingName } } : {})
         }
       });
 
       if (error) {
         setPaymentError(error.message || 'Payment failed');
       } else if (paymentIntent?.status === 'requires_capture') {
-        // Payment authorized successfully
-        onSuccess(paymentIntent.id);
-      }
-    } catch (error: any) {
-      setPaymentError(error.message || 'Payment failed');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleApplePayment = async () => {
-    if (!stripe) {
-      setPaymentError('Stripe not loaded');
-      return;
-    }
-
-    setIsProcessing(true);
-    setPaymentError(null);
-
-    try {
-      const { clientSecret } = await stripeIntentMutation.mutateAsync(amount);
-      
-      if (!clientSecret) {
-        throw new Error('Failed to create payment intent');
-      }
-
-      const cardElement = elements?.getElement(CardElement);
-      
-      if (!cardElement) {
-        throw new Error('Card element not found');
-      }
-
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: 'Customer'
-          }
-        }
-      });
-
-      if (error) {
-        setPaymentError(error.message || 'Payment failed');
-      } else if (paymentIntent?.status === 'requires_capture') {
-        onSuccess(paymentIntent.id);
+        // Authorised. The server verifies this with Stripe before the DJ sees
+        // anything, so there is nothing to pass along here.
+        onSuccess();
+      } else {
+        setPaymentError('Il pagamento non è stato autorizzato');
       }
     } catch (error: any) {
       setPaymentError(error.message || 'Payment failed');
@@ -135,9 +89,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 }}
               />
             </div>
-            
+
             <button
-              onClick={handleStripePayment}
+              onClick={() => authorize()}
               disabled={isProcessing || !stripe}
               className="btn-primary w-full"
               aria-describedby="payment-info"
@@ -153,7 +107,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         return (
           <div className="space-y-4">
             <button
-              onClick={handleApplePayment}
+              onClick={() => authorize('Customer')}
               disabled={isProcessing || !stripe}
               className="btn-primary w-full flex items-center justify-center space-x-2"
             >

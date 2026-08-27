@@ -29,8 +29,11 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   });
   const [donationAmount, setDonationAmount] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showSpotifySearch, setShowSpotifySearch] = useState(false);
+  // Set once the server has created the request and told us how to pay for it.
+  const [pendingPayment, setPendingPayment] = useState<
+    { requestId: string; clientSecret: string } | null
+  >(null);
 
   // The server enforces this too, but showing the DJ's real floor is the
   // difference between a slider that works and one that fails on submit.
@@ -42,14 +45,40 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const minDonation = eventInfo?.minDonation;
   const effectiveAmount = donationAmount ?? minDonation ?? 0;
 
+  // Step one: the request is created up front, invisible to the DJ, and the
+  // server hands back the authorisation that belongs to it.
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
     onSuccess: (response) => {
-      toast.success('Richiesta inviata! In attesa dell\'approvazione del DJ...');
-      onSuccess();
+      if (!response.payment.clientSecret) {
+        toast.error('Metodo di pagamento non disponibile');
+        return;
+      }
+
+      setPendingPayment({
+        requestId: response.requestId,
+        clientSecret: response.payment.clientSecret
+      });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Errore nell\'invio della richiesta';
+      toast.error(message);
+    },
+  });
+
+  // Step three: the server checks the authorisation with Stripe and only then
+  // puts the request in front of the DJ.
+  const confirmRequestMutation = useMutation({
+    mutationFn: (requestId: string) => requestsApi.confirm(requestId),
+    onSuccess: () => {
+      toast.success('Richiesta inviata! In attesa dell\'approvazione del DJ...');
+      setPendingPayment(null);
+      onSuccess();
+    },
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        'Pagamento autorizzato ma la richiesta non è stata confermata';
       toast.error(message);
     },
   });
@@ -72,11 +101,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       return;
     }
 
-    setShowPaymentForm(true);
-  };
-
-  const handlePaymentSuccess = (paymentIntentId: string) => {
-    const requestData: CreateRequestData = {
+    createRequestMutation.mutate({
       eventCode,
       songTitle: formData.songTitle,
       artistName: formData.artistName,
@@ -85,12 +110,8 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       requesterName: formData.requesterName,
       requesterEmail: formData.requesterEmail || undefined,
       donationAmount: effectiveAmount,
-      paymentMethod,
-      paymentIntentId
-    };
-
-    createRequestMutation.mutate(requestData);
-    setShowPaymentForm(false);
+      paymentMethod
+    });
   };
 
   const handleSpotifySelect = (track: { songTitle: string; artistName: string; spotifyTrackId?: string; albumCover?: string }) => {
@@ -137,12 +158,15 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
           </button>
         </div>
 
-        {showPaymentForm ? (
+        {pendingPayment ? (
           <PaymentForm
             amount={effectiveAmount}
             paymentMethod={paymentMethod}
-            onSuccess={handlePaymentSuccess}
-            onCancel={() => setShowPaymentForm(false)}
+            clientSecret={pendingPayment.clientSecret}
+            onSuccess={() => confirmRequestMutation.mutate(pendingPayment.requestId)}
+            // Abandoning here leaves an unpaid request behind; the server
+            // discards it, and its authorisation, on the next sweep.
+            onCancel={() => setPendingPayment(null)}
           />
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
