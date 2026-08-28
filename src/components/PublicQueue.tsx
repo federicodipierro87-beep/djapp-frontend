@@ -63,7 +63,7 @@ const PublicQueue: React.FC<PublicQueueProps> = ({ queue }) => {
           </h3>
 
           <div className="space-y-3">
-            {waitingQueue.map((item, index) => (
+            {waitingQueue.map((item) => (
               <div
                 key={item.id}
                 className={`bg-black/40 border rounded-xl p-4 transition-all duration-300 ${

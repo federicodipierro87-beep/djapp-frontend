@@ -277,7 +277,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
 
   const endEventMutation = useMutation({
     mutationFn: djApi.endCurrentEvent,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Evento terminato! Riassunto salvato negli insights.');
       onUpdate();
       // Invalida la cache degli insights per aggiornare la lista

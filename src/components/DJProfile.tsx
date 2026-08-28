@@ -32,7 +32,7 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
 
   const profileMutation = useMutation({
     mutationFn: djApi.updateSettings,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Profilo aggiornato con successo!');
       queryClient.invalidateQueries({ queryKey: ['dj', 'settings'] });
     },

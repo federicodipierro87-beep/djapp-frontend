@@ -1,7 +1,7 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, Calendar, Music } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import type { Event } from '../types';
 
 const createCustomIcon = (status: string) => {

@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import { queueApi, eventsApi } from '../services/api';
 import PublicQueue from '../components/PublicQueue';
 import SongRequestForm from '../components/SongRequestForm';
-import { PublicQueueItem, Event as EventType } from '../types';
 import { useSocket } from '../hooks/useSocket';
 
 const Event: React.FC = () => {

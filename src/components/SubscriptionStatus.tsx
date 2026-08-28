@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Crown, AlertTriangle, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { subscriptionApi } from '../services/api';
@@ -10,8 +10,6 @@ interface SubscriptionStatusProps {
 }
 
 const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ compact = false }) => {
-  const queryClient = useQueryClient();
-
   const { data: status, isLoading } = useQuery({
     queryKey: ['subscription-status'],
     queryFn: subscriptionApi.getStatus,

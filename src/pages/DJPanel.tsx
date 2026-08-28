@@ -4,8 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Music,
   LogOut,
-  Settings,
-  Plus,
   Users,
   Clock,
   CheckCircle,
@@ -19,7 +17,6 @@ import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
 import { logout } from '../services/session';
 import RequestList from '../components/RequestList';
-import EarningsCounter from '../components/EarningsCounter';
 import DJSettings from '../components/DJSettings';
 import DJProfile from '../components/DJProfile';
 import QRCodeModal from '../components/QRCodeModal';
@@ -100,7 +97,7 @@ const DJPanel: React.FC = () => {
 
   const newEventMutation = useMutation({
     mutationFn: djApi.generateNewEventCode,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Nuovo evento iniziato!');
       queryClient.invalidateQueries({ queryKey: ['dj-me'] });
       queryClient.invalidateQueries({ queryKey: ['dj-requests'] });

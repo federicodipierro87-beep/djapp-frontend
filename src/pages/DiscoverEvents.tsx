@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -9,7 +9,6 @@ import {
   Navigation,
   RefreshCw,
   ArrowLeft,
-  Filter,
   Calendar,
   Music
 } from 'lucide-react';
@@ -49,7 +48,7 @@ const DiscoverEvents: React.FC = () => {
     data: events,
     isLoading: eventsLoading,
     refetch,
-    error,
+    error: eventsError,
   } = useQuery({
     queryKey: ['nearby-events', currentLocation?.lat, currentLocation?.lng, radius, statusFilter],
     queryFn: () =>
@@ -313,6 +312,21 @@ const DiscoverEvents: React.FC = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : eventsError ? (
+                    // Without this a failed request looks exactly like an empty
+                    // area, and the user widens the radius over and over.
+                    <div className="text-center py-8">
+                      <AlertCircle className="w-12 h-12 text-yellow-400/50 mx-auto mb-3" />
+                      <p className="text-yellow-200/80">
+                        Non siamo riusciti a caricare gli eventi.
+                      </p>
+                      <button
+                        onClick={() => refetch()}
+                        className="text-sm text-green-400 underline mt-2"
+                      >
+                        Riprova
+                      </button>
                     </div>
                   ) : (
                     <div className="text-center py-8">

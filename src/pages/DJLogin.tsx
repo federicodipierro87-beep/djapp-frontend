@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Music, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -40,7 +40,7 @@ const DJLogin: React.FC = () => {
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Registrazione completata! In attesa di approvazione dall\'amministratore.');
       setIsLogin(true); // Switch to login form
       setFormData({ email: '', password: '', name: '' }); // Clear form
