@@ -119,26 +119,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           </div>
         );
 
-      case 'PAYPAL':
-        return (
-          <div className="space-y-4">
-            <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
-              <p className="text-gray-600">PayPal non disponibile. Usa la carta di credito.</p>
-            </div>
-          </div>
-        );
-
-      case 'SATISPAY':
-        // The integration is not finished. It used to fake a success after a
-        // two second timer, which produced accepted requests nobody paid for.
-        return (
-          <div className="space-y-4">
-            <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
-              <p className="text-gray-600">Satispay non disponibile. Usa la carta di credito.</p>
-            </div>
-          </div>
-        );
-
+      // PayPal and Satispay never reach this form: both send the guest away to
+      // their own page and bring them back to /payment/return.
       default:
         return null;
     }

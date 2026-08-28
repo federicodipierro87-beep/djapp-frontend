@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2, CheckCircle2, ExternalLink, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
 import type { DJ, EventSummary } from '../types';
@@ -105,13 +105,136 @@ const StripeConnectPanel: React.FC = () => {
   );
 };
 
+// Satispay has no marketplace: the money can only reach the DJ if the payment
+// was created against their own business account. So this connects that account
+// rather than onboarding into ours the way Stripe Connect does. The DJ hands
+// over a single-use activation code; the key pair is made on the server and the
+// private half never comes back here.
+const SatispayPanel: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [activationCode, setActivationCode] = useState('');
+
+  const { data: status, isLoading } = useQuery({
+    queryKey: ['satispayStatus'],
+    queryFn: djApi.getSatispayStatus,
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: djApi.connectSatispay,
+    onSuccess: () => {
+      toast.success('Satispay collegato');
+      setActivationCode('');
+      queryClient.invalidateQueries({ queryKey: ['satispayStatus'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.error || 'Impossibile collegare Satispay');
+    },
+  });
+
+  const disconnectMutation = useMutation({
+    mutationFn: djApi.disconnectSatispay,
+    onSuccess: () => {
+      toast.success('Satispay scollegato');
+      queryClient.invalidateQueries({ queryKey: ['satispayStatus'] });
+    },
+    onError: (error: any) => {
+      // Refused while payments are still on hold: disconnecting would leave the
+      // guests' money locked with nobody able to release it.
+      toast.error(error.response?.data?.error || 'Impossibile scollegare Satispay');
+    },
+  });
+
+  if (isLoading || !status) {
+    return <div className="h-24 rounded-lg bg-gray-50 border border-gray-200 animate-pulse" />;
+  }
+
+  const handleDisconnect = () => {
+    if (window.confirm('Scollegare Satispay? I tuoi ospiti non potranno più pagare con Satispay.')) {
+      disconnectMutation.mutate();
+    }
+  };
+
+  return (
+    <div
+      className={`p-4 rounded-lg border ${
+        status.connected ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center mb-1">
+            {status.connected ? (
+              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+            ) : (
+              <Smartphone className="w-4 h-4 text-gray-500 mr-2" />
+            )}
+            <h4 className={`font-medium ${status.connected ? 'text-green-900' : 'text-gray-900'}`}>
+              Satispay {status.connected ? 'collegato' : '(opzionale)'}
+            </h4>
+          </div>
+
+          <p className={`text-sm ${status.connected ? 'text-green-800' : 'text-gray-600'}`}>
+            {status.connected
+              ? 'I tuoi ospiti possono pagare con Satispay e l\'importo arriva sul tuo conto business.'
+              : 'Collega il tuo conto Satispay Business per offrire Satispay ai tuoi ospiti.'}
+          </p>
+
+          {status.connected && (
+            <p className="text-xs text-gray-500 mt-2 font-mono">{status.keyId}</p>
+          )}
+
+          <p className="text-xs text-gray-500 mt-1">{status.environment}</p>
+        </div>
+
+        {status.connected && (
+          <button
+            onClick={handleDisconnect}
+            disabled={disconnectMutation.isPending}
+            className="btn-secondary whitespace-nowrap"
+          >
+            {disconnectMutation.isPending ? 'Scollegamento...' : 'Scollega'}
+          </button>
+        )}
+      </div>
+
+      {!status.connected && (
+        <div className="mt-4 flex items-start gap-2">
+          <div className="flex-1">
+            <label className="form-label" htmlFor="satispay-activation-code">
+              Codice di attivazione
+            </label>
+            <input
+              id="satispay-activation-code"
+              type="text"
+              value={activationCode}
+              onChange={(e) => setActivationCode(e.target.value)}
+              className="form-input font-mono"
+              placeholder="Dal tuo Satispay Business Dashboard"
+            />
+            <p className="text-sm text-gray-600 mt-1">
+              Si trova in Impostazioni → Negozi online del dashboard Satispay Business.
+              Vale una volta sola.
+            </p>
+          </div>
+          <button
+            onClick={() => connectMutation.mutate(activationCode.trim())}
+            disabled={connectMutation.isPending || activationCode.trim().length < 6}
+            className="btn-primary whitespace-nowrap mt-7"
+          >
+            {connectMutation.isPending ? 'Collegamento...' : 'Collega'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: dj.name,
     minDonation: dj.minDonation,
     paypalEmail: dj.paypalEmail || '',
-    satispayId: dj.satispayId || '',
   });
 
   const updateMutation = useMutation({
@@ -138,7 +261,6 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
       name: formData.name,
       minDonation: formData.minDonation,
       paypalEmail: formData.paypalEmail || undefined,
-      satispayId: formData.satispayId || undefined,
     });
   };
 
@@ -375,27 +497,15 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
             </div>
           </div>
 
-          <div>
-            <label className="form-label">Satispay ID (Optional)</label>
-            <input
-              type="text"
-              value={formData.satispayId}
-              onChange={(e) => setFormData({ ...formData, satispayId: e.target.value })}
-              className="form-input"
-              placeholder="Your Satispay business ID"
-            />
-            <p className="text-sm text-gray-600 mt-1">
-              Satispay Business API integration (Italy only)
-            </p>
-          </div>
+          <SatispayPanel />
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h4 className="font-medium text-blue-900 mb-2">Come funzionano gli incassi:</h4>
           <ul className="text-blue-800 text-sm space-y-1">
-            <li>• Le donazioni vengono trattenute sulla carta dell'ospite e addebitate solo quando suoni la canzone</li>
-            <li>• Con Stripe collegato l'importo arriva sul tuo conto, non sul nostro</li>
-            <li>• PayPal e Satispay non sono ancora attivi</li>
+            <li>• La donazione viene trattenuta e addebitata solo quando suoni la canzone</li>
+            <li>• Con Stripe o Satispay collegati l'importo arriva sul tuo conto, non sul nostro</li>
+            <li>• I metodi che non hai collegato non vengono proposti ai tuoi ospiti</li>
           </ul>
         </div>
       </div>

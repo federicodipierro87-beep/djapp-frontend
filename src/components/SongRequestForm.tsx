@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { X, CreditCard, Smartphone, DollarSign, Music, Search } from 'lucide-react';
+import { X, CreditCard, Smartphone, Wallet, Music, Search } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { requestsApi, eventsApi } from '../services/api';
 import DonationSlider from './DonationSlider';
@@ -9,6 +10,17 @@ import type { CreateRequestData, PaymentMethod } from '../types';
 
 // Fetched when the guest reaches the payment step, not when the page loads.
 const StripePayment = lazy(() => import('./StripePayment'));
+
+// How to label each method if the server offers it. Which ones it offers depends
+// on what the platform has switched on and, for Satispay, on whether this DJ has
+// connected an account - so that decision is not repeated here.
+const METHOD_DETAILS: Record<PaymentMethod, { name: string; icon: LucideIcon }> = {
+  CARD: { name: 'Carta', icon: CreditCard },
+  APPLE_PAY: { name: 'Apple Pay', icon: Smartphone },
+  GOOGLE_PAY: { name: 'Google Pay', icon: Smartphone },
+  PAYPAL: { name: 'PayPal', icon: Wallet },
+  SATISPAY: { name: 'Satispay', icon: Smartphone }
+};
 
 interface SongRequestFormProps {
   eventCode: string;
@@ -30,15 +42,15 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     albumCover: '',
   });
   const [donationAmount, setDonationAmount] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
+  const [chosenMethod, setChosenMethod] = useState<PaymentMethod | null>(null);
   const [showSpotifySearch, setShowSpotifySearch] = useState(false);
   // Set once the server has created the request and told us how to pay for it.
   const [pendingPayment, setPendingPayment] = useState<
-    { requestId: string; clientSecret: string } | null
+    { requestId: string; method: PaymentMethod; clientSecret: string } | null
   >(null);
 
-  // The server enforces this too, but showing the DJ's real floor is the
-  // difference between a slider that works and one that fails on submit.
+  // The minimum donation and the payment methods are both the server's to
+  // decide; guessing either produces a form that fails at the last step.
   const { data: eventInfo, isLoading: eventInfoLoading } = useQuery({
     queryKey: ['public-event-info', eventCode],
     queryFn: () => eventsApi.getPublicInfo(eventCode),
@@ -47,11 +59,16 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const minDonation = eventInfo?.minDonation;
   const effectiveAmount = donationAmount ?? minDonation ?? 0;
 
+  const availableMethods = eventInfo?.paymentMethods ?? [];
+  // The server lists them in its own order, so the first is the default until
+  // the guest picks otherwise.
+  const paymentMethod = chosenMethod ?? availableMethods[0];
+
   // Step one: the request is created up front, invisible to the DJ, and the
   // server hands back the authorisation that belongs to it.
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       // PayPal and Satispay take over the browser instead of embedding a form.
       // The guest comes back to /payment/return, which is where the request gets
       // confirmed, so there is nothing more to do here.
@@ -68,6 +85,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
 
       setPendingPayment({
         requestId: response.requestId,
+        method: variables.paymentMethod,
         clientSecret: response.payment.clientSecret
       });
     },
@@ -102,7 +120,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       return;
     }
 
-    if (minDonation === undefined) {
+    if (minDonation === undefined || !paymentMethod) {
       toast.error('Impossibile leggere le impostazioni dell\'evento, riprova');
       return;
     }
@@ -136,14 +154,6 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
     setShowSpotifySearch(false);
   };
 
-  // Satispay and PayPal are not offered until their integrations are real:
-  // showing a method that cannot take money is worse than not showing it.
-  const paymentMethods = [
-    { id: 'CARD' as PaymentMethod, name: 'Carta', icon: CreditCard },
-    { id: 'APPLE_PAY' as PaymentMethod, name: 'Apple Pay', icon: Smartphone },
-    { id: 'GOOGLE_PAY' as PaymentMethod, name: 'Google Pay', icon: Smartphone },
-  ];
-
   if (showSpotifySearch) {
     return (
       <SpotifySearch
@@ -175,7 +185,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
           >
             <StripePayment
               amount={effectiveAmount}
-              paymentMethod={paymentMethod}
+              paymentMethod={pendingPayment.method}
               clientSecret={pendingPayment.clientSecret}
               onSuccess={() => confirmRequestMutation.mutate(pendingPayment.requestId)}
               // Abandoning here leaves an unpaid request behind; the server
@@ -318,24 +328,35 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             <div>
               <label className="block text-sm font-medium text-green-300 mb-3">Metodo di Pagamento</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {paymentMethods.map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setPaymentMethod(method.id)}
-                    className={`p-3 border-2 rounded-xl text-center transition-all duration-200 ${
-                      paymentMethod === method.id
-                        ? 'border-green-400 bg-green-400/10'
-                        : 'border-green-400/30 hover:border-green-400/60 bg-black/40'
-                    }`}
-                  >
-                    <method.icon className={`w-5 h-5 mx-auto mb-1 ${paymentMethod === method.id ? 'text-green-400' : 'text-green-200/60'}`} />
-                    <span className={`text-sm font-medium ${paymentMethod === method.id ? 'text-green-400' : 'text-green-200/60'}`}>
-                      {method.name}
-                    </span>
-                  </button>
-                ))}
+                {availableMethods.map((method) => {
+                  const { name, icon: Icon } = METHOD_DETAILS[method];
+                  const selected = paymentMethod === method;
+
+                  return (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setChosenMethod(method)}
+                      className={`p-3 border-2 rounded-xl text-center transition-all duration-200 ${
+                        selected
+                          ? 'border-green-400 bg-green-400/10'
+                          : 'border-green-400/30 hover:border-green-400/60 bg-black/40'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 mx-auto mb-1 ${selected ? 'text-green-400' : 'text-green-200/60'}`} />
+                      <span className={`text-sm font-medium ${selected ? 'text-green-400' : 'text-green-200/60'}`}>
+                        {name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {availableMethods.length === 0 && !eventInfoLoading && (
+                <p className="text-green-200/60 text-sm">
+                  Nessun metodo di pagamento disponibile per questo evento.
+                </p>
+              )}
             </div>
 
             {/* Important Note */}
@@ -344,7 +365,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
               <ul className="text-yellow-200/80 text-sm space-y-1">
                 <li>• Sarai addebitato solo se il DJ accetta la tua richiesta</li>
                 <li>• Le richieste scadono dopo 3 ore se non esaminate</li>
-                <li>• La tua carta sara autorizzata ma non addebitata fino all'accettazione</li>
+                <li>• Il tuo pagamento sara autorizzato ma non addebitato fino all'accettazione</li>
               </ul>
             </div>
 
@@ -359,7 +380,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
               </button>
               <button
                 type="submit"
-                disabled={createRequestMutation.isPending || minDonation === undefined}
+                disabled={createRequestMutation.isPending || minDonation === undefined || !paymentMethod}
                 className="flex-1 bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-3 px-6 rounded-xl hover:from-green-400 hover:to-green-300 transition-all duration-300 shadow-lg shadow-green-400/30 disabled:opacity-50"
               >
                 {createRequestMutation.isPending ? 'Invio...' : 'Continua al Pagamento'}

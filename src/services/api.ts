@@ -18,7 +18,8 @@ import type {
   CreateEventData,
   UpdateEventData,
   EventStatus,
-  ConnectStatus
+  ConnectStatus,
+  SatispayStatus
 } from '../types';
 import { logout } from './session';
 
@@ -197,6 +198,23 @@ export const djApi = {
   // resumes it; the DJ is sent off to Stripe and comes back to the panel.
   startConnectOnboarding: async (): Promise<{ url: string; expiresAt: number }> => {
     const response = await api.post('/dj/connect/onboard');
+    return response.data;
+  },
+
+  getSatispayStatus: async (): Promise<SatispayStatus> => {
+    const response = await api.get('/dj/satispay/status');
+    return response.data;
+  },
+
+  // The activation code is single use. The server generates the key pair and
+  // keeps the private half, so nothing secret travels back here.
+  connectSatispay: async (activationCode: string): Promise<{ connected: true; keyId: string }> => {
+    const response = await api.post('/dj/satispay/connect', { activationCode });
+    return response.data;
+  },
+
+  disconnectSatispay: async (): Promise<{ connected: false }> => {
+    const response = await api.delete('/dj/satispay/connect');
     return response.data;
   },
 };

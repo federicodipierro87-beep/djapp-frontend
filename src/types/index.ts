@@ -9,7 +9,6 @@ export interface DJ {
   minDonation: number;
   stripeAccountId?: string;
   paypalEmail?: string;
-  satispayId?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -23,6 +22,16 @@ export interface ConnectStatus {
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   onboardingComplete: boolean;
+}
+
+// Satispay runs on the DJ's own business account rather than the platform's, so
+// unlike Stripe there is nothing to fall back on: either these credentials exist
+// or the DJ's guests are not offered the method.
+export interface SatispayStatus {
+  connected: boolean;
+  keyId: string | null;
+  /** Which Satispay the server talks to, so staging is never mistaken for live. */
+  environment: string;
 }
 
 export interface Request {
@@ -214,6 +223,10 @@ export interface PublicEventInfo {
   eventName: string | null;
   djName: string;
   minDonation: number;
+  // Decided by the server: which integrations are switched on, narrowed to the
+  // ones this particular DJ can actually be paid through. Offering anything else
+  // would be a button that fails at the last step.
+  paymentMethods: PaymentMethod[];
   isAcceptingRequests: boolean;
 }
 
