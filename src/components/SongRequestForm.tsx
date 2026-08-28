@@ -52,6 +52,15 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
     onSuccess: (response) => {
+      // PayPal and Satispay take over the browser instead of embedding a form.
+      // The guest comes back to /payment/return, which is where the request gets
+      // confirmed, so there is nothing more to do here.
+      const externalUrl = response.payment.approvalUrl ?? response.payment.redirectUrl;
+      if (externalUrl) {
+        window.location.href = externalUrl;
+        return;
+      }
+
       if (!response.payment.clientSecret) {
         toast.error('Metodo di pagamento non disponibile');
         return;
