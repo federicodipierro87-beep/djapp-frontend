@@ -364,7 +364,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
               <h4 className="font-medium text-yellow-400 mb-2">Importante:</h4>
               <ul className="text-yellow-200/80 text-sm space-y-1">
                 <li>• Sarai addebitato solo se il DJ accetta la tua richiesta</li>
-                <li>• Le richieste scadono dopo 3 ore se non esaminate</li>
+                <li>• Se il DJ non risponde, l'autorizzazione viene rilasciata entro 12 ore — subito, se la serata finisce prima</li>
                 <li>• Il tuo pagamento sara autorizzato ma non addebitato fino all'accettazione</li>
               </ul>
             </div>

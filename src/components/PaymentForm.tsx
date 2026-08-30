@@ -155,7 +155,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         <ul className="text-gray-700 text-sm space-y-1">
           <li>• Il tuo pagamento sarà processato solo se il DJ accetta la richiesta</li>
           <li>• Questa è un'autorizzazione - nessun addebito fino all'accettazione</li>
-          <li>• Le richieste scadono dopo 3 ore</li>
+          <li>• Se il DJ non risponde, l'autorizzazione viene rilasciata entro 12 ore — subito, se la serata finisce prima</li>
           <li>• Riceverai una conferma una volta che il DJ decide</li>
         </ul>
       </div>
