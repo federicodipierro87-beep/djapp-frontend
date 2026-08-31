@@ -15,7 +15,7 @@ import UpdateBanner from './components/UpdateBanner';
 // which is the only thing that ever needed it.
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-ink-950 text-bone">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/discover" element={<DiscoverEvents />} />

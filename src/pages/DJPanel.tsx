@@ -1,18 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Music,
-  LogOut,
-  Users,
-  Clock,
-  CheckCircle,
-  Euro,
-  QrCode,
-  RefreshCw,
-  Copy,
-  User
-} from 'lucide-react';
+import { LogOut, QrCode, RefreshCw, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
 import { logout } from '../services/session';
@@ -24,13 +13,47 @@ import SubscriptionStatus from '../components/SubscriptionStatus';
 import EventList from '../components/EventList';
 import { useSocket } from '../hooks/useSocket';
 import RealtimeStatus from '../components/RealtimeStatus';
+import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
+import Label from '../components/ui/Label';
+import { formatMoney } from '../components/ui/format';
 
 // Drag and drop is only needed once the DJ opens the queue tab, and it brings
 // the whole of dnd-kit with it.
 const DJQueue = lazy(() => import('../components/DJQueue'));
 
+type Tab = 'requests' | 'queue' | 'events' | 'settings' | 'profile';
+
+const TABS: { id: Tab; label: string; short: string }[] = [
+  { id: 'requests', label: 'Richieste', short: 'Richieste' },
+  { id: 'queue', label: 'Coda', short: 'Coda' },
+  { id: 'events', label: 'Eventi', short: 'Eventi' },
+  { id: 'profile', label: 'Profilo', short: 'Profilo' },
+  { id: 'settings', label: 'Impostazioni', short: 'Impost.' },
+];
+
+/** Una cifra sola per riquadro: in cabina si legge di sfuggita. */
+const Stat: React.FC<{ label: string; value: React.ReactNode; tone?: 'default' | 'live' }> = ({
+  label,
+  value,
+  tone = 'default',
+}) => (
+  <div className="px-3 py-2.5 sm:px-4 sm:py-3">
+    <Label as="div" tone={tone === 'live' ? 'live' : 'dim'}>
+      {label}
+    </Label>
+    <p
+      className={`num mt-1.5 text-xl sm:text-2xl font-semibold leading-none ${
+        tone === 'live' ? 'text-live' : 'text-bone'
+      }`}
+    >
+      {value}
+    </p>
+  </div>
+);
+
 const DJPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'requests' | 'queue' | 'events' | 'settings' | 'profile'>('requests');
+  const [activeTab, setActiveTab] = useState<Tab>('requests');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrData, setQrData] = useState<{ qrCode: string; eventCode: string; eventUrl: string } | null>(null);
   const navigate = useNavigate();
@@ -68,7 +91,7 @@ const DJPanel: React.FC = () => {
   const { isConnected: realtimeConnected } = useSocket({
     eventCode: djData?.eventCode || '',
     onNewRequest: () => {
-      toast('Nuova richiesta ricevuta!', { icon: '🎵' });
+      toast('Nuova richiesta ricevuta');
     },
   });
 
@@ -160,259 +183,165 @@ const DJPanel: React.FC = () => {
   const waitingSongs =
     queueData?.queue.filter(item => item.status === 'WAITING' || item.status === 'NOW_PLAYING') || [];
 
+  const tabCounts: Partial<Record<Tab, number>> = {
+    requests: pendingRequests.length,
+    queue: waitingSongs.length,
+  };
+
   if (djLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen bg-ink-950 flex items-center justify-center">
+        <Label>Caricamento</Label>
       </div>
     );
   }
 
   if (!djData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-ink-950 flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Accesso Negato</h1>
-          <button
-            onClick={() => navigate('/dj/login')}
-            className="btn-primary"
-          >
-            Vai al Login
-          </button>
+          <Label as="div" tone="live">
+            Accesso negato
+          </Label>
+          <h1 className="mt-3 font-display text-2xl font-bold">Serve un accesso valido</h1>
+          <Button className="mt-6" onClick={() => navigate('/dj/login')}>
+            Vai al login
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="flex items-center">
-              <Music className="w-6 h-6 sm:w-8 sm:h-8 text-primary-600 mr-2 sm:mr-3" />
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard DJ</h1>
-                <p className="text-sm sm:text-base text-gray-600">Bentornato, {djData.name}</p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-ink-950">
+      {/* Barra identità + azioni sull'evento */}
+      <header className="border-b border-white/[0.08]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Logo size="sm" />
+            <span className="text-[13px] text-bone-dim truncate">{djData.name}</span>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              {/* Subscription Status */}
+            <div className="ml-auto flex items-center gap-2">
               <SubscriptionStatus compact />
+              <RealtimeStatus connected={realtimeConnected} />
+            </div>
+          </div>
 
-              {/* Event Code Display */}
-              <div className="bg-primary-50 border border-primary-200 rounded-lg p-2 sm:p-3">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={handleShowQRCode}
-                    disabled={qrMutation.isPending}
-                    className="hover:bg-primary-100 p-1 rounded transition-colors"
-                    title="Mostra QR Code"
-                  >
-                    <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
-                  </button>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-primary-600 font-medium">Codice Evento</p>
-                      <RealtimeStatus connected={realtimeConnected} />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-base sm:text-lg text-primary-800">{djData.eventCode}</span>
-                      <button
-                        onClick={handleCopyEventCode}
-                        className="p-1 hover:bg-primary-100 rounded transition-colors"
-                        title="Copia codice evento"
-                      >
-                        <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-primary-600" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            {/* Il codice evento è ciò che il DJ detta al microfono: sta grande. */}
+            <div>
+              <Label as="div">Codice evento</Label>
+              <div className="mt-1.5 flex items-center gap-2">
+                <span className="num text-2xl sm:text-3xl font-semibold tracking-[0.15em] leading-none">
+                  {djData.eventCode}
+                </span>
+                <Button
+                  variant="quiet"
+                  size="sm"
+                  onClick={handleCopyEventCode}
+                  aria-label="Copia il codice evento"
+                  title="Copia codice"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <button
-                  onClick={handleCopyEventUrl}
-                  className="btn-secondary flex items-center justify-center text-sm"
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Copia URL Evento</span>
-                  <span className="sm:hidden">URL</span>
-                </button>
-
-                <button
-                  onClick={handleNewEvent}
-                  disabled={newEventMutation.isPending}
-                  className="btn-primary flex items-center justify-center text-sm"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">{newEventMutation.isPending ? 'Avvio...' : 'Nuovo Evento'}</span>
-                  <span className="sm:hidden">Nuovo</span>
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="btn-secondary flex items-center justify-center text-sm"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Esci</span>
-                  <span className="sm:hidden">Logout</span>
-                </button>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShowQRCode}
+                disabled={qrMutation.isPending}
+              >
+                <QrCode className="h-4 w-4" />
+                QR
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCopyEventUrl}>
+                <Copy className="h-4 w-4" />
+                <span className="hidden sm:inline">Copia link</span>
+                <span className="sm:hidden">Link</span>
+              </Button>
+              <Button size="sm" onClick={handleNewEvent} disabled={newEventMutation.isPending}>
+                <RefreshCw className="h-4 w-4" />
+                {newEventMutation.isPending ? 'Avvio…' : 'Nuovo evento'}
+              </Button>
+              <Button variant="quiet" size="sm" onClick={handleLogout} aria-label="Esci">
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Stats Bar */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-1 sm:mr-2" />
-                <div>
-                  <p className="text-xs sm:text-sm text-blue-600">In Attesa</p>
-                  <p className="text-lg sm:text-xl font-bold text-blue-800">{pendingRequests.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-green-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-1 sm:mr-2" />
-                <div>
-                  <p className="text-xs sm:text-sm text-green-600">Accettate</p>
-                  <p className="text-lg sm:text-xl font-bold text-green-800">{stats?.acceptedRequests || 0}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-purple-50 rounded-lg p-3 sm:p-4 sm:col-span-1 col-span-2">
-              <div className="flex items-center">
-                <Music className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-1 sm:mr-2" />
-                <div>
-                  <p className="text-xs sm:text-sm text-purple-600">In Coda</p>
-                  <p className="text-lg sm:text-xl font-bold text-purple-800">{queueData?.queue.length || 0}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-yellow-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mr-1 sm:mr-2" />
-                <div>
-                  <p className="text-xs sm:text-sm text-yellow-600">Richieste Totali</p>
-                  <p className="text-lg sm:text-xl font-bold text-yellow-800">{stats?.totalRequests || 0}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-emerald-50 rounded-lg p-3 sm:p-4">
-              <div className="flex items-center">
-                <Euro className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mr-1 sm:mr-2" />
-                <div>
-                  <p className="text-xs sm:text-sm text-emerald-600">Guadagni</p>
-                  <p className="text-lg sm:text-xl font-bold text-emerald-800">€{queueData?.totalEarnings || 0}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white border-b">
+      {/* Numeri della serata: densi, senza riquadri colorati. */}
+      <div className="border-b border-white/[0.08]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 sm:space-x-8 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('requests')}
-              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                activeTab === 'requests'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <span className="hidden sm:inline">Richieste in Attesa</span>
-              <span className="sm:hidden">Richieste</span>
-              {pendingRequests.length > 0 && (
-                <span className="ml-1 sm:ml-2 bg-red-100 text-red-800 text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                  {pendingRequests.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('queue')}
-              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                activeTab === 'queue'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <span className="hidden sm:inline">Coda Canzoni</span>
-              <span className="sm:hidden">Coda</span>
-              {waitingSongs.length > 0 && (
-                <span className="ml-1 sm:ml-2 bg-primary-100 text-primary-800 text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                  {waitingSongs.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                activeTab === 'events'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Eventi
-            </button>
-
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                activeTab === 'profile'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <User className="w-4 h-4 mr-1 inline" />
-              Profilo
-            </button>
-
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`py-3 sm:py-4 px-2 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
-                activeTab === 'settings'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Impostazioni
-            </button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-x divide-y sm:divide-y-0 divide-white/[0.08] -mx-3 sm:-mx-4">
+            <Stat
+              label="In attesa"
+              value={pendingRequests.length}
+              tone={pendingRequests.length > 0 ? 'live' : 'default'}
+            />
+            <Stat label="In coda" value={waitingSongs.length} />
+            <Stat label="Accettate" value={stats?.acceptedRequests || 0} />
+            <Stat label="Richieste" value={stats?.totalRequests || 0} />
+            <Stat label="Incasso" value={formatMoney(queueData?.totalEarnings || 0, true)} />
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      {/* Tab */}
+      <nav className="border-b border-white/[0.08] sticky top-0 z-20 bg-ink-950/95 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-thin">
+            {TABS.map((tab) => {
+              const count = tabCounts[tab.id];
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`relative py-3.5 px-3 text-sm font-medium whitespace-nowrap transition-colors
+                    border-b-2 -mb-px ${
+                      isActive
+                        ? 'border-bone text-bone'
+                        : 'border-transparent text-bone-dim hover:text-bone'
+                    }`}
+                >
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.short}</span>
+                  {count !== undefined && count > 0 && (
+                    <span
+                      className={`num ml-2 text-[11px] px-1.5 py-0.5 rounded-sm ${
+                        tab.id === 'requests' ? 'bg-live text-bone' : 'bg-ink-700 text-bone-dim'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Contenuto */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {activeTab === 'requests' && (
-          <RequestList 
-            requests={pendingRequests} 
+          <RequestList
+            requests={pendingRequests}
             onUpdate={() => {
               refetchRequests();
               refetchQueue();
             }}
           />
         )}
-        
+
         {activeTab === 'queue' && queueData && (
-          <Suspense fallback={<p className="text-gray-500">Caricamento coda...</p>}>
+          <Suspense fallback={<Label as="div">Caricamento coda</Label>}>
             <DJQueue
               queue={queueData.queue}
               totalEarnings={queueData.totalEarnings}
@@ -420,26 +349,20 @@ const DJPanel: React.FC = () => {
             />
           </Suspense>
         )}
-        
-        {activeTab === 'events' && (
-          <EventList />
-        )}
 
-        {activeTab === 'profile' && (
-          <DJProfile
-            dj={djData}
-          />
-        )}
-        
+        {activeTab === 'events' && <EventList />}
+
+        {activeTab === 'profile' && <DJProfile dj={djData} />}
+
         {activeTab === 'settings' && (
-          <DJSettings 
-            dj={djData} 
+          <DJSettings
+            dj={djData}
             onUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ['dj-me'] });
             }}
           />
         )}
-      </div>
+      </main>
 
       {/* QR Code Modal */}
       {qrData && (

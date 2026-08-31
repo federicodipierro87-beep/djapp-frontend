@@ -1,78 +1,64 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Music, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import Label from './ui/Label';
+import StatusDot from './ui/StatusDot';
 import type { Event } from '../types';
 
 interface EventCardProps {
   event: Event;
 }
 
+const formatDateTime = (dateString: string) =>
+  new Date(dateString).toLocaleDateString('it-IT', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+// Le distanze restano in mono con la virgola: è un numero, e in Italia si legge
+// «1,4 km», non «1.4 km».
+const formatDistance = (km: number) =>
+  km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace('.', ',')} km`;
+
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const navigate = useNavigate();
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('it-IT', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const handleClick = () => {
-    navigate(`/event/${event.eventCode}`);
-  };
+  const isLive = event.status === 'ACTIVE';
 
   return (
-    <div
-      onClick={handleClick}
-      className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-primary-300"
+    <button
+      type="button"
+      onClick={() => navigate(`/event/${event.eventCode}`)}
+      className="group w-full text-left bg-ink-900 border border-white/[0.08] rounded-lg p-4
+                 hover:border-white/20 hover:bg-ink-800 transition-colors"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                event.status === 'ACTIVE' ? 'bg-green-500' : 'bg-yellow-500'
-              }`}
-            />
-            <span className="text-xs text-gray-500">
-              {event.status === 'ACTIVE' ? 'Attivo ora' : 'Programmato'}
-            </span>
-          </div>
-
-          <h3 className="font-semibold text-gray-900 mb-1">{event.name}</h3>
-
-          <div className="flex items-center text-sm text-gray-600 mb-1">
-            <Music className="w-4 h-4 mr-1 text-primary-500" />
-            <span>{event.dj?.name}</span>
-          </div>
-
-          <div className="flex items-center text-sm text-gray-500">
-            <MapPin className="w-4 h-4 mr-1" />
-            <span>{event.city}</span>
-            {event.distance !== undefined && (
-              <span className="ml-2 text-primary-600 font-medium">
-                {event.distance < 1
-                  ? `${Math.round(event.distance * 1000)} m`
-                  : `${event.distance.toFixed(1)} km`}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <Calendar className="w-4 h-4 mr-1" />
-            <span>{formatDateTime(event.dateTime)}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center text-primary-600">
-          <ArrowRight className="w-5 h-5" />
-        </div>
+      <div className="flex items-center gap-2">
+        <StatusDot tone={isLive ? 'live' : 'warn'} pulse={isLive} />
+        <Label tone={isLive ? 'live' : 'dim'}>{isLive ? 'In corso ora' : 'Programmato'}</Label>
       </div>
-    </div>
+
+      <div className="mt-2.5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="font-display font-semibold text-bone leading-snug truncate">
+            {event.name}
+          </h3>
+          {event.dj?.name && (
+            <p className="mt-0.5 text-[13px] text-bone-dim truncate">{event.dj.name}</p>
+          )}
+        </div>
+        <ArrowRight className="h-4 w-4 shrink-0 mt-1 text-bone-faint group-hover:text-bone transition-colors" />
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-white/[0.08] flex items-center justify-between gap-3 text-[13px]">
+        <span className="text-bone-dim truncate">{event.city}</span>
+        <span className="num text-[11px] text-bone-faint shrink-0">
+          {formatDateTime(event.dateTime)}
+          {event.distance !== undefined && ` · ${formatDistance(event.distance)}`}
+        </span>
+      </div>
+    </button>
   );
 };
 

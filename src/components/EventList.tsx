@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Plus,
-  MapPin,
-  Calendar,
-  Play,
-  Square,
-  Trash2,
-  Edit,
-  Copy,
-  Users,
-  ExternalLink
-} from 'lucide-react';
+import { Plus, Play, Square, Trash2, Pencil, Copy, Link2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { eventsApi } from '../services/api';
+import Surface from './ui/Surface';
+import Button from './ui/Button';
+import Label from './ui/Label';
+import StatusDot from './ui/StatusDot';
+import EmptyState from './ui/EmptyState';
+import type { BadgeTone } from './ui/Badge';
 import type { Event, EventStatus } from '../types';
 import EventFormModal from './EventFormModal';
 
-const statusColors: Record<EventStatus, { bg: string; text: string; label: string }> = {
-  SCHEDULED: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Programmato' },
-  ACTIVE: { bg: 'bg-green-100', text: 'text-green-800', label: 'Attivo' },
-  ENDED: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Terminato' },
-  CANCELLED: { bg: 'bg-red-100', text: 'text-red-800', label: 'Annullato' },
+const STATUS: Record<EventStatus, { tone: BadgeTone; label: string }> = {
+  SCHEDULED: { tone: 'warn', label: 'Programmato' },
+  ACTIVE: { tone: 'live', label: 'In corso' },
+  ENDED: { tone: 'muted', label: 'Terminato' },
+  CANCELLED: { tone: 'muted', label: 'Annullato' },
 };
 
 const EventList: React.FC = () => {
@@ -118,147 +113,148 @@ const EventList: React.FC = () => {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">I Miei Eventi</h2>
-        <button
-          onClick={openCreate}
-          className="btn-primary flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Crea Evento
-        </button>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <Label as="div">Il tuo calendario</Label>
+          <h3 className="mt-2 font-display text-xl font-bold tracking-tight">Eventi</h3>
+        </div>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4" />
+          Nuovo evento
+        </Button>
       </div>
 
-      {!events || events.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nessun evento</h3>
-          <p className="text-gray-600 mb-4">Crea il tuo primo evento per iniziare a ricevere richieste</p>
-          <button
-            onClick={openCreate}
-            className="btn-primary"
-          >
-            <Plus className="w-4 h-4 mr-2 inline" />
-            Crea Primo Evento
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {events.map((event) => {
-            const status = statusColors[event.status];
-            return (
-              <div
-                key={event.id}
-                className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{event.name}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
-                        {status.label}
-                      </span>
+      <div className="mt-6">
+        {isLoading ? (
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[132px] rounded-lg bg-ink-900 animate-pulse" />
+            ))}
+          </div>
+        ) : !events || events.length === 0 ? (
+          <div className="border border-white/[0.08] rounded-lg">
+            <EmptyState
+              title="Nessun evento in calendario"
+              description="Crea il primo evento: da lì nascono il codice e il QR che dai al pubblico."
+              action={
+                <Button onClick={openCreate}>
+                  <Plus className="h-4 w-4" />
+                  Crea evento
+                </Button>
+              }
+            />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {events.map((event) => {
+              const status = STATUS[event.status];
+              return (
+                <Surface key={event.id}>
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <StatusDot tone={status.tone} pulse={event.status === 'ACTIVE'} />
+                        <Label as="div" tone={event.status === 'ACTIVE' ? 'live' : 'dim'}>
+                          {status.label}
+                        </Label>
+                      </div>
+
+                      <h4 className="mt-2 font-display text-lg font-semibold leading-snug truncate">
+                        {event.name}
+                      </h4>
+
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-bone-dim">
+                        <span className="truncate">{event.address}</span>
+                        <span className="text-bone-faint">·</span>
+                        <span className="num">{formatDateTime(event.dateTime)}</span>
+                        {event._count && (
+                          <>
+                            <span className="text-bone-faint">·</span>
+                            <span className="num">{event._count.requests} richieste</span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Il codice è ciò che il DJ detta al pubblico: mono, e le due
+                          copie stanno lì accanto. */}
+                      <div className="mt-3 flex items-center gap-1">
+                        <span className="num text-sm font-semibold tracking-[0.15em] mr-1">
+                          {event.eventCode}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyEventCode(event.eventCode)}
+                          title="Copia il codice"
+                          aria-label="Copia il codice"
+                          className="p-2 rounded-md text-bone-faint hover:text-bone hover:bg-white/[0.06] transition-colors"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyEventUrl(event.eventCode)}
+                          title="Copia il link"
+                          aria-label="Copia il link"
+                          className="p-2 rounded-md text-bone-faint hover:text-bone hover:bg-white/[0.06] transition-colors"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                        {event.address}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1 text-gray-400" />
-                        {formatDateTime(event.dateTime)}
-                      </div>
-                      {event._count && (
-                        <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-1 text-gray-400" />
-                          {event._count.requests} richieste
-                        </div>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      {event.status === 'SCHEDULED' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleActivate(event)}
+                          disabled={activateMutation.isPending}
+                        >
+                          <Play className="h-4 w-4" />
+                          Attiva
+                        </Button>
+                      )}
+
+                      {event.status === 'ACTIVE' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEnd(event)}
+                          disabled={endMutation.isPending}
+                        >
+                          <Square className="h-4 w-4" />
+                          Termina
+                        </Button>
+                      )}
+
+                      {event.status === 'SCHEDULED' && (
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(event)}>
+                          <Pencil className="h-4 w-4" />
+                          Modifica
+                        </Button>
+                      )}
+
+                      {(event.status === 'SCHEDULED' || event.status === 'CANCELLED') && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(event)}
+                          disabled={deleteMutation.isPending}
+                          title="Elimina evento"
+                          aria-label="Elimina evento"
+                          className="p-2 rounded-md text-bone-faint hover:text-live hover:bg-white/[0.06] transition-colors disabled:opacity-40"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       )}
                     </div>
-
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="text-xs text-gray-500">Codice:</span>
-                      <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
-                        {event.eventCode}
-                      </code>
-                      <button
-                        onClick={() => handleCopyEventCode(event.eventCode)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                        title="Copia codice"
-                      >
-                        <Copy className="w-4 h-4 text-gray-400" />
-                      </button>
-                      <button
-                        onClick={() => handleCopyEventUrl(event.eventCode)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                        title="Copia URL"
-                      >
-                        <ExternalLink className="w-4 h-4 text-gray-400" />
-                      </button>
-                    </div>
                   </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {event.status === 'SCHEDULED' && (
-                      <button
-                        onClick={() => handleActivate(event)}
-                        disabled={activateMutation.isPending}
-                        className="btn-primary flex items-center text-sm"
-                      >
-                        <Play className="w-4 h-4 mr-1" />
-                        Attiva
-                      </button>
-                    )}
-
-                    {event.status === 'ACTIVE' && (
-                      <button
-                        onClick={() => handleEnd(event)}
-                        disabled={endMutation.isPending}
-                        className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center text-sm"
-                      >
-                        <Square className="w-4 h-4 mr-1" />
-                        Termina
-                      </button>
-                    )}
-
-                    {event.status === 'SCHEDULED' && (
-                      <button
-                        onClick={() => openEdit(event)}
-                        className="btn-secondary flex items-center text-sm"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Modifica
-                      </button>
-                    )}
-
-                    {(event.status === 'SCHEDULED' || event.status === 'CANCELLED') && (
-                      <button
-                        onClick={() => handleDelete(event)}
-                        disabled={deleteMutation.isPending}
-                        className="btn-secondary flex items-center text-sm text-red-600 hover:text-red-700 hover:border-red-300"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Elimina
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                </Surface>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <EventFormModal
         isOpen={modalOpen}

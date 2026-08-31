@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Euro } from 'lucide-react';
+import Label from './ui/Label';
+import { formatMoney } from './ui/format';
 
 interface DonationSliderProps {
   amount: number;
@@ -8,80 +9,75 @@ interface DonationSliderProps {
   max: number;
 }
 
-const DonationSlider: React.FC<DonationSliderProps> = ({ 
-  amount, 
-  onChange, 
-  min, 
-  max 
-}) => {
+const DonationSlider: React.FC<DonationSliderProps> = ({ amount, onChange, min, max }) => {
   const percentage = ((amount - min) / (max - min)) * 100;
 
-  const quickAmounts = [min, 10, 20, 50];
+  // Il minimo è deciso dal DJ: le scorciatoie sotto di esso non hanno senso.
+  const quickAmounts = Array.from(new Set([min, 10, 20, 50])).filter(
+    (value) => value >= min && value <= max
+  );
 
   return (
     <div>
-      <label className="form-label flex items-center">
-        <Heart className="w-4 h-4 mr-2 text-red-500" />
-        Importo Donazione
-      </label>
-      
-      {/* Current Amount Display */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="bg-primary-50 border-2 border-primary-200 rounded-2xl px-6 py-4">
-          <div className="flex items-center justify-center">
-            <Euro className="w-6 h-6 text-primary-600 mr-1" />
-            <span className="text-3xl font-bold text-primary-800">{amount}</span>
-          </div>
-          <p className="text-center text-primary-600 text-sm mt-1">
-            {amount === min ? 'Importo minimo' : 'Grazie per il tuo sostegno!'}
-          </p>
-        </div>
+      <div className="flex items-baseline justify-between">
+        <Label as="div">Mancia</Label>
+        <span className="num text-[11px] text-bone-faint">min {formatMoney(min, true)}</span>
       </div>
 
-      {/* Slider */}
-      <div className="relative mb-6">
+      {/* L'importo è il numero più grande della schermata: è la decisione. */}
+      <div className="mt-3 flex items-baseline gap-2">
+        <span className="num text-4xl font-semibold leading-none">{formatMoney(amount, true)}</span>
+        {amount === min && <span className="label-mono">importo minimo</span>}
+      </div>
+
+      <div className="mt-5">
         <input
           type="range"
           min={min}
           max={max}
           value={amount}
+          aria-label="Importo della mancia"
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          className="donation-slider w-full h-1 rounded-full appearance-none cursor-pointer"
           style={{
-            background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
+            background: `linear-gradient(to right, #F5F4F0 0%, #F5F4F0 ${percentage}%, #2C2C33 ${percentage}%, #2C2C33 100%)`,
           }}
         />
-        <div className="flex justify-between text-sm text-gray-600 mt-2">
-          <span>€{min}</span>
-          <span>€{max}</span>
+        <div className="flex justify-between num text-[11px] text-bone-faint mt-2">
+          <span>{formatMoney(min, true)}</span>
+          <span>{formatMoney(max, true)}</span>
         </div>
       </div>
 
-      {/* Quick Amount Buttons */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="mt-4 grid grid-cols-4 gap-2">
         {quickAmounts.map((quickAmount) => (
           <button
             key={quickAmount}
             type="button"
             onClick={() => onChange(quickAmount)}
-            className={`py-2 px-3 text-sm font-medium rounded-lg border transition-all duration-200 ${
+            className={`num py-2 px-2 text-sm rounded-md border transition-colors min-h-[40px] ${
               amount === quickAmount
-                ? 'bg-primary-600 text-white border-primary-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300 hover:bg-primary-50'
+                ? 'bg-bone text-ink-950 border-bone font-semibold'
+                : 'bg-transparent text-bone-dim border-white/15 hover:border-white/30 hover:text-bone'
             }`}
           >
-            €{quickAmount}
+            {formatMoney(quickAmount, true)}
           </button>
         ))}
       </div>
 
-      {/* Custom Amount Input */}
       <div className="mt-4">
-        <label className="block text-sm text-gray-600 mb-2">Oppure inserisci un importo personalizzato:</label>
+        <label htmlFor="custom-amount" className="field-label">
+          Oppure un altro importo
+        </label>
         <div className="relative">
-          <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 num text-sm text-bone-faint">
+            €
+          </span>
           <input
+            id="custom-amount"
             type="number"
+            inputMode="decimal"
             min={min}
             max={max}
             value={amount}
@@ -89,36 +85,30 @@ const DonationSlider: React.FC<DonationSliderProps> = ({
               const value = Math.max(min, Math.min(max, Number(e.target.value) || min));
               onChange(value);
             }}
-            className="form-input pl-10"
+            className="field pl-8 font-mono tabular-nums"
             placeholder={min.toString()}
           />
         </div>
       </div>
 
       <style>{`
-        .slider::-webkit-slider-thumb {
+        .donation-slider::-webkit-slider-thumb {
           appearance: none;
           height: 20px;
           width: 20px;
-          border-radius: 50%;
-          background: #a855f7;
+          border-radius: 9999px;
+          background: #F5F4F0;
+          border: 3px solid #08080A;
           cursor: pointer;
-          box-shadow: 0 0 2px 0 #555;
-          transition: background .15s ease-in-out;
         }
 
-        .slider::-webkit-slider-thumb:hover {
-          background: #9333ea;
-        }
-
-        .slider::-moz-range-thumb {
+        .donation-slider::-moz-range-thumb {
           height: 20px;
           width: 20px;
-          border-radius: 50%;
-          background: #a855f7;
+          border-radius: 9999px;
+          background: #F5F4F0;
+          border: 3px solid #08080A;
           cursor: pointer;
-          border: none;
-          box-shadow: 0 0 2px 0 #555;
         }
       `}</style>
     </div>

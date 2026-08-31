@@ -1,8 +1,12 @@
 import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Crown, AlertTriangle, Clock, ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { subscriptionApi } from '../services/api';
+import Surface from './ui/Surface';
+import Label from './ui/Label';
+import StatusDot from './ui/StatusDot';
+import type { BadgeTone } from './ui/Badge';
 import type { Subscription } from '../types';
 
 interface SubscriptionStatusProps {
@@ -27,11 +31,7 @@ const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ compact = false
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center text-gray-400">
-        <Loader2 className="w-4 h-4 animate-spin" />
-      </div>
-    );
+    return <div className="h-5 w-24 rounded bg-ink-800 animate-pulse" />;
   }
 
   if (!status?.subscription) {
@@ -40,41 +40,31 @@ const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ compact = false
 
   const subscription = status.subscription;
 
-  const getStatusConfig = () => {
+  // Un abbonamento in regola non deve gridare: resta grigio. Il colore compare
+  // solo quando c'è qualcosa da fare.
+  const getStatusConfig = (): { tone: BadgeTone; label: string; description: string } => {
     switch (subscription.status) {
       case 'TRIALING':
         return {
-          icon: Clock,
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
-          label: 'Prova gratuita',
+          tone: 'neutral',
+          label: 'Prova',
           description: getTrialDaysLeft(subscription)
         };
       case 'ACTIVE':
         return {
-          icon: Crown,
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
+          tone: 'ok',
           label: 'Attivo',
-          description: subscription.plan === 'ANNUAL' ? 'Piano Annuale' : 'Piano Mensile'
+          description: subscription.plan === 'ANNUAL' ? 'Piano annuale' : 'Piano mensile'
         };
       case 'PAST_DUE':
         return {
-          icon: AlertTriangle,
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-50',
-          borderColor: 'border-yellow-200',
+          tone: 'warn',
           label: 'Pagamento in sospeso',
           description: 'Aggiorna il metodo di pagamento'
         };
       default:
         return {
-          icon: AlertTriangle,
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
+          tone: 'live',
           label: 'Non attivo',
           description: 'Rinnova l\'abbonamento'
         };
@@ -82,66 +72,64 @@ const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({ compact = false
   };
 
   const config = getStatusConfig();
-  const Icon = config.icon;
 
   if (compact) {
     return (
       <button
+        type="button"
         onClick={() => portalMutation.mutate()}
         disabled={portalMutation.isPending}
-        className={`flex items-center ${config.bgColor} ${config.borderColor} border rounded-lg px-3 py-1.5 hover:opacity-80 transition-opacity`}
         title="Gestisci abbonamento"
+        className="inline-flex items-center gap-2 px-2.5 py-1.5 -mx-1 rounded-md
+                   hover:bg-white/[0.06] transition-colors disabled:opacity-50"
       >
-        <Icon className={`w-4 h-4 ${config.color} mr-1.5`} />
-        <span className={`text-sm font-medium ${config.color}`}>
+        <StatusDot tone={config.tone} />
+        <Label tone={config.tone === 'ok' || config.tone === 'neutral' ? 'dim' : 'live'}>
           {config.label}
-        </span>
-        {subscription.cancelAtPeriodEnd && (
-          <span className="ml-1.5 text-xs text-orange-600">(cancella)</span>
-        )}
+          {subscription.cancelAtPeriodEnd && ' · in scadenza'}
+        </Label>
       </button>
     );
   }
 
   return (
-    <div className={`${config.bgColor} ${config.borderColor} border rounded-lg p-4`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center">
-          <Icon className={`w-5 h-5 ${config.color} mr-2`} />
-          <div>
-            <p className={`font-medium ${config.color}`}>{config.label}</p>
-            <p className="text-sm text-gray-600">{config.description}</p>
+    <Surface>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <StatusDot tone={config.tone} />
+            <Label as="div" tone={config.tone === 'ok' || config.tone === 'neutral' ? 'dim' : 'live'}>
+              Abbonamento
+            </Label>
           </div>
+          <p className="mt-2 font-medium text-bone">{config.label}</p>
+          <p className="mt-1 text-[13px] text-bone-dim">{config.description}</p>
         </div>
 
         <button
+          type="button"
           onClick={() => portalMutation.mutate()}
           disabled={portalMutation.isPending}
-          className={`flex items-center text-sm ${config.color} hover:opacity-80 transition-opacity`}
+          className="inline-flex items-center gap-1.5 text-[13px] text-bone-dim hover:text-bone
+                     transition-colors shrink-0 disabled:opacity-50"
         >
-          {portalMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              Gestisci
-              <ExternalLink className="w-3 h-3 ml-1" />
-            </>
-          )}
+          {portalMutation.isPending ? 'Apertura…' : 'Gestisci'}
+          <ExternalLink className="h-3.5 w-3.5" />
         </button>
       </div>
 
       {subscription.cancelAtPeriodEnd && (
-        <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded text-sm text-orange-700">
-          L'abbonamento terminerà il {formatDate(subscription.currentPeriodEnd)}
-        </div>
+        <p className="mt-4 pt-4 border-t border-white/[0.08] text-[13px] text-warn">
+          L'abbonamento terminerà il {formatDate(subscription.currentPeriodEnd)}.
+        </p>
       )}
 
       {subscription.status === 'TRIALING' && subscription.trialEnd && (
-        <div className="mt-3 text-sm text-gray-600">
-          La prova termina il {formatDate(subscription.trialEnd)}
-        </div>
+        <p className="mt-4 pt-4 border-t border-white/[0.08] text-[13px] text-bone-dim">
+          La prova termina il {formatDate(subscription.trialEnd)}.
+        </p>
       )}
-    </div>
+    </Surface>
   );
 };
 

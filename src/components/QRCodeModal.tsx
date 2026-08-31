@@ -1,6 +1,9 @@
 import React from 'react';
-import { X, Download, Copy } from 'lucide-react';
+import { Download, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Modal from './ui/Modal';
+import Button from './ui/Button';
+import Label from './ui/Label';
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -35,63 +38,45 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            QR Code Evento
-          </h2>
-          
-          <div className="mb-4">
-            <p className="text-gray-600 mb-1">Codice Evento:</p>
-            <p className="text-xl font-bold text-primary-600 font-mono">{eventCode}</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6 inline-block">
-            <img 
-              src={qrCode} 
-              alt={`QR Code per evento ${eventCode}`}
-              className="w-64 h-64 mx-auto"
-            />
-          </div>
-
-          <p className="text-gray-600 mb-6 text-sm">
-            Scansiona questo QR code per accedere direttamente all'evento
-          </p>
-
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-            <button
-              onClick={handleDownload}
-              className="btn-primary flex items-center justify-center flex-1"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Scarica QR
-            </button>
-            
-            <button
-              onClick={handleCopyUrl}
-              className="btn-secondary flex items-center justify-center flex-1"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Copia URL
-            </button>
-          </div>
-
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-500 break-all">
-              {eventUrl}
-            </p>
-          </div>
+    <Modal
+      eyebrow="Da proiettare o stampare"
+      title="QR code dell'evento"
+      onClose={onClose}
+      footer={
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button onClick={handleDownload} className="flex-1">
+            <Download className="h-4 w-4" />
+            Scarica
+          </Button>
+          <Button variant="ghost" onClick={handleCopyUrl} className="flex-1">
+            <Copy className="h-4 w-4" />
+            Copia link
+          </Button>
         </div>
+      }
+    >
+      <div className="flex flex-col items-center">
+        {/* Il QR resta su bianco con il suo quiet zone: su fondo scuro molte
+            fotocamere non lo leggono. È l'unica isola chiara dell'interfaccia. */}
+        <div className="bg-white p-4 rounded-lg">
+          <img
+            src={qrCode}
+            alt={`QR code dell'evento ${eventCode}`}
+            className="h-56 w-56 sm:h-64 sm:w-64 block"
+          />
+        </div>
+
+        <Label as="div" className="mt-6">
+          Codice evento
+        </Label>
+        <p className="num mt-1.5 text-2xl font-semibold tracking-[0.15em]">{eventCode}</p>
+
+        <p className="mt-6 pt-5 border-t border-white/[0.08] w-full text-center text-[13px] text-bone-dim">
+          Chi lo inquadra arriva direttamente alla coda della serata.
+        </p>
+        <p className="mt-2 text-[11px] text-bone-faint break-all text-center">{eventUrl}</p>
       </div>
-    </div>
+    </Modal>
   );
 };
 

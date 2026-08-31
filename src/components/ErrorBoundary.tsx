@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -33,18 +33,28 @@ class ErrorBoundary extends Component<Props, State> {
     if (!this.state.error) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-green-900/30 border border-green-400/40 rounded-2xl p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" aria-hidden="true" />
-          <h1 className="text-xl font-semibold text-green-300 mb-2">Qualcosa è andato storto</h1>
-          <p className="text-green-200/70 mb-6">
-            Ricarica la pagina per continuare. Se il problema si ripete, riprova tra qualche minuto.
-          </p>
+      <div className="min-h-screen bg-ink-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-ink-900 border border-white/[0.08] rounded-lg p-5 sm:p-8">
+          <div className="border-l-2 border-live pl-4 py-1">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] leading-none text-live">
+              Errore
+            </span>
+            <h1 className="mt-2.5 font-display text-2xl font-bold leading-tight">
+              Qualcosa è andato storto
+            </h1>
+            <p className="mt-2.5 text-sm text-bone-dim text-pretty">
+              Ricarica la pagina per continuare. Se il problema si ripete, riprova tra qualche
+              minuto.
+            </p>
+          </div>
+
           <button
             onClick={this.handleReload}
-            className="inline-flex items-center justify-center bg-green-500 hover:bg-green-400 text-black font-medium px-5 py-3 rounded-xl transition-colors"
+            className="mt-8 w-full inline-flex items-center justify-center gap-2 rounded-md
+                       bg-bone text-ink-950 font-medium text-sm px-4 py-2.5 min-h-[44px]
+                       hover:bg-white transition-colors"
           >
-            <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
             Ricarica
           </button>
         </div>

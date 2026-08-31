@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Music, X, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { spotifyApi } from '../services/api';
+import Modal from './ui/Modal';
+import AlbumArt from './ui/AlbumArt';
+import EmptyState from './ui/EmptyState';
 
 interface SpotifyTrack {
   id: string;
@@ -23,7 +26,6 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
@@ -49,111 +51,86 @@ const SpotifySearch: React.FC<SpotifySearchProps> = ({ onSelect, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-green-900/40 backdrop-blur-lg rounded-2xl border border-green-400/30 shadow-2xl shadow-green-400/20 w-full max-w-lg max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-green-400/30">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-green-400 flex items-center">
-              <Music className="w-5 h-5 mr-2" />
-              Cerca su Spotify
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-green-400/10 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5 text-green-400" />
-            </button>
-          </div>
-
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-400/60" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cerca canzone o artista..."
-              className="w-full pl-10 pr-4 py-3 bg-black/60 border-2 border-green-400/50 rounded-xl text-green-400 placeholder-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400"
-              autoFocus
-            />
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {isLoading && (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 text-green-400 animate-spin" />
-            </div>
-          )}
-
-          {error && (
-            <div className="text-center py-8">
-              <p className="text-red-400">Errore nella ricerca. Riprova.</p>
-            </div>
-          )}
-
-          {!isLoading && !error && debouncedQuery.length < 2 && (
-            <div className="text-center py-8">
-              <Music className="w-12 h-12 text-green-400/30 mx-auto mb-3" />
-              <p className="text-green-200/60">Digita almeno 2 caratteri per cercare</p>
-            </div>
-          )}
-
-          {!isLoading && !error && data?.tracks && data.tracks.length === 0 && debouncedQuery.length >= 2 && (
-            <div className="text-center py-8">
-              <p className="text-green-200/60">Nessun risultato per "{debouncedQuery}"</p>
-            </div>
-          )}
-
-          {data?.tracks && data.tracks.length > 0 && (
-            <div className="space-y-2">
-              {data.tracks.map((track: SpotifyTrack) => (
-                <div
-                  key={track.id}
-                  className="flex items-center gap-3 p-3 bg-black/40 border border-green-400/30 rounded-xl hover:border-green-400/60 hover:bg-green-400/5 transition-all cursor-pointer"
-                  onClick={() => handleSelect(track)}
-                >
-                  {/* Album Cover */}
-                  <div className="w-12 h-12 flex-shrink-0">
-                    {track.albumCoverSmall ? (
-                      <img
-                        src={track.albumCoverSmall}
-                        alt={track.album}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-lg bg-green-900/50 flex items-center justify-center">
-                        <Music className="w-6 h-6 text-green-400/50" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Track Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-green-400 truncate">{track.name}</h3>
-                    <p className="text-sm text-green-200/70 truncate">{track.artist}</p>
-                  </div>
-
-                  {/* Duration */}
-                  <span className="text-xs text-green-200/50 flex-shrink-0">
-                    {track.durationFormatted}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-green-400/30">
-          <p className="text-xs text-green-200/50 text-center">
-            Powered by Spotify
-          </p>
-        </div>
+    <Modal
+      title="Cerca il pezzo"
+      eyebrow="Catalogo Spotify"
+      size="md"
+      onClose={onClose}
+      footer={<p className="label-mono text-center">Powered by Spotify</p>}
+    >
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-bone-faint pointer-events-none" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Titolo o artista"
+          className="field pl-9"
+          autoFocus
+        />
       </div>
-    </div>
+
+      {isLoading && (
+        <div className="space-y-2" aria-hidden="true">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-2.5">
+              <div className="h-12 w-12 rounded-sm bg-ink-800 animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-1/2 rounded-sm bg-ink-800 animate-pulse" />
+                <div className="h-3 w-1/3 rounded-sm bg-ink-800 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <EmptyState
+          eyebrow="Errore"
+          title="La ricerca non ha risposto"
+          description="Riprova tra un momento, oppure inserisci titolo e artista a mano."
+        />
+      )}
+
+      {!isLoading && !error && debouncedQuery.length < 2 && (
+        <EmptyState title="Scrivi almeno due caratteri" description="Cerca per titolo o artista." />
+      )}
+
+      {!isLoading && !error && data?.tracks?.length === 0 && debouncedQuery.length >= 2 && (
+        <EmptyState
+          title={`Nessun risultato per "${debouncedQuery}"`}
+          description="Prova con il nome dell'artista, o scrivilo a mano nel modulo."
+        />
+      )}
+
+      {data?.tracks && data.tracks.length > 0 && (
+        <ul className="border-t border-white/[0.08]">
+          {data.tracks.map((track: SpotifyTrack) => (
+            <li key={track.id}>
+              <button
+                type="button"
+                onClick={() => handleSelect(track)}
+                className="w-full flex items-center gap-3 py-2.5 text-left border-b border-white/[0.08]
+                           hover:bg-white/[0.04] transition-colors px-2 -mx-2"
+              >
+                <AlbumArt
+                  src={track.albumCoverSmall ?? undefined}
+                  alt={track.album}
+                  className="h-12 w-12"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-medium text-bone truncate">{track.name}</p>
+                  <p className="text-[13px] text-bone-dim truncate">{track.artist}</p>
+                </div>
+                <span className="num text-[11px] text-bone-faint shrink-0">
+                  {track.durationFormatted}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Modal>
   );
 };
 

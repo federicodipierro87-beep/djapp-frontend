@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#08080A"/>
+  <!-- Marchio: due barre (la coda) + il punto "on air" -->
+  <rect x="6" y="8" width="3" height="16" fill="#F5F4F0"/>
+  <rect x="12" y="12" width="3" height="12" fill="#F5F4F0"/>
+  <rect x="18" y="16" width="3" height="8" fill="#9C9A94"/>
+  <circle cx="25" cy="9" r="3" fill="#FF3B1F"/>
+</svg>

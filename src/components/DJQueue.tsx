@@ -19,10 +19,13 @@ import {
   restrictToParentElement,
 } from '@dnd-kit/modifiers';
 import { useMutation } from '@tanstack/react-query';
-import { Music, Euro, GripVertical } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { queueApi } from '../services/api';
 import QueueItem from './QueueItem';
+import Label from './ui/Label';
+import EmptyState from './ui/EmptyState';
+import { formatMoney } from './ui/format';
 import { QueueItem as QueueItemType } from '../types';
 
 interface DJQueueProps {
@@ -42,11 +45,11 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
   const reorderMutation = useMutation({
     mutationFn: (queueItemIds: string[]) => queueApi.reorder(queueItemIds),
     onSuccess: () => {
-      toast.success('Queue reordered');
+      toast.success('Coda riordinata');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to reorder queue';
+      const message = error.response?.data?.error || 'Non è stato possibile riordinare la coda';
       toast.error(message);
     },
   });
@@ -54,11 +57,11 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
   const setNowPlayingMutation = useMutation({
     mutationFn: queueApi.setNowPlaying,
     onSuccess: () => {
-      toast.success('Song set as now playing');
+      toast.success('In riproduzione');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to set now playing';
+      const message = error.response?.data?.error || 'Non è stato possibile avviare il brano';
       toast.error(message);
     },
   });
@@ -66,11 +69,11 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
   const markAsPlayedMutation = useMutation({
     mutationFn: queueApi.markAsPlayed,
     onSuccess: () => {
-      toast.success('Song marked as played');
+      toast.success('Segnata come suonata');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to mark as played';
+      const message = error.response?.data?.error || 'Non è stato possibile segnare il brano';
       toast.error(message);
     },
   });
@@ -78,11 +81,11 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
   const skipSongMutation = useMutation({
     mutationFn: queueApi.skipSong,
     onSuccess: () => {
-      toast.success('Song skipped');
+      toast.success('Brano saltato');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to skip song';
+      const message = error.response?.data?.error || 'Non è stato possibile saltare il brano';
       toast.error(message);
     },
   });
@@ -107,50 +110,43 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
   const waitingQueue = queue.filter(item => ['WAITING', 'NOW_PLAYING'].includes(item.status));
   const completedSongs = queue.filter(item => ['PLAYED', 'SKIPPED'].includes(item.status));
 
+  // L'incasso è già in cima al pannello: qui basta una riga, non un riquadro.
+  const earnings = (
+    <div className="flex items-baseline justify-between gap-4 pb-4 border-b border-white/[0.08]">
+      <Label as="div">Incasso della serata</Label>
+      <span className="num text-2xl font-semibold leading-none">
+        {formatMoney(totalEarnings, true)}
+      </span>
+    </div>
+  );
+
   if (queue.length === 0) {
     return (
-      <div className="space-y-6">
-        {/* Earnings Display */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-          <div className="text-center">
-            <Euro className="w-12 h-12 text-green-600 mx-auto mb-2" />
-            <h3 className="text-2xl font-bold text-green-800">€{totalEarnings}</h3>
-            <p className="text-green-600">Total earnings for this event</p>
-          </div>
-        </div>
-
-        <div className="card text-center py-12">
-          <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Queue is empty</h3>
-          <p className="text-gray-600">Accepted song requests will appear here for you to manage.</p>
-        </div>
+      <div>
+        {earnings}
+        <EmptyState
+          title="La coda è vuota"
+          description="Le richieste che accetti finiscono qui, pronte da riordinare."
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Earnings Display */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-        <div className="text-center">
-          <Euro className="w-12 h-12 text-green-600 mx-auto mb-2" />
-          <h3 className="text-2xl font-bold text-green-800">€{totalEarnings}</h3>
-          <p className="text-green-600">Total earnings for this event</p>
-        </div>
-      </div>
+    <div>
+      {earnings}
 
-      {/* Current Queue */}
       {waitingQueue.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <Music className="w-5 h-5 mr-2 text-primary-600" />
-              Song Queue ({waitingQueue.length})
-            </h2>
-            <div className="flex items-center text-sm text-gray-600">
-              <GripVertical className="w-4 h-4 mr-2" />
-              Drag to reorder
+        <section className="mt-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-baseline gap-3">
+              <Label as="div">In coda</Label>
+              <span className="num text-[11px] text-bone-faint">{waitingQueue.length}</span>
             </div>
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-bone-faint">
+              <GripVertical className="h-4 w-4" />
+              Trascina per riordinare
+            </span>
           </div>
 
           <DndContext
@@ -160,7 +156,7 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
           >
             <SortableContext items={waitingQueue.map(item => item.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {waitingQueue.map((item, index) => (
                   <QueueItem
                     key={item.id}
@@ -180,18 +176,17 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
               </div>
             </SortableContext>
           </DndContext>
-        </div>
+        </section>
       )}
 
-      {/* Completed Songs */}
       {completedSongs.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <Music className="w-5 h-5 mr-2 text-gray-600" />
-            Recently Played ({completedSongs.length})
-          </h2>
-          
-          <div className="space-y-3">
+        <section className="mt-8 pt-6 border-t border-white/[0.08]">
+          <div className="flex items-baseline gap-3 mb-4">
+            <Label as="div">Già passate</Label>
+            <span className="num text-[11px] text-bone-faint">{completedSongs.length}</span>
+          </div>
+
+          <div className="space-y-2">
             {completedSongs.slice(-10).reverse().map((item) => (
               <QueueItem
                 key={item.id}
@@ -205,7 +200,7 @@ const DJQueue: React.FC<DJQueueProps> = ({ queue, totalEarnings, onUpdate }) => 
               />
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

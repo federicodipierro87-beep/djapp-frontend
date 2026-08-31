@@ -15,24 +15,33 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <ErrorBoundary>
           <App />
         </ErrorBoundary>
+        {/* In basso e non in alto: su mobile il top-right copre l'header
+            e il pulsante di chiusura dei modali. */}
         <Toaster
-          position="top-right"
+          position="bottom-center"
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#363636',
-              color: '#fff',
+              background: '#16161A',
+              color: '#F5F4F0',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '6px',
+              boxShadow: '0 10px 24px -6px rgb(0 0 0 / 0.75)',
+              fontFamily: "'Archivo Variable', ui-sans-serif, system-ui, sans-serif",
+              fontSize: '14px',
+              padding: '10px 14px',
+              maxWidth: '92vw',
             },
             success: {
               iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
+                primary: '#37D67A',
+                secondary: '#08080A',
               },
             },
             error: {
               iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
+                primary: '#FF3B1F',
+                secondary: '#F5F4F0',
               },
             },
           }}

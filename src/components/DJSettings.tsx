@@ -1,14 +1,47 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Euro, CreditCard, Mail, Save, Copy, QrCode, AlertTriangle, StopCircle, BarChart3, TrendingUp, Trash2, CheckCircle2, ExternalLink, Smartphone } from 'lucide-react';
+import { Save, Copy, StopCircle, Trash2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
+import Surface from './ui/Surface';
+import Button from './ui/Button';
+import Field from './ui/Field';
+import Label from './ui/Label';
+import StatusDot from './ui/StatusDot';
+import EmptyState from './ui/EmptyState';
+import { formatMoney } from './ui/format';
 import type { DJ, EventSummary } from '../types';
 
 interface DJSettingsProps {
   dj: DJ;
   onUpdate: () => void;
 }
+
+/** Titolo di sezione: micro-label mono sopra, riga sotto. Niente icone decorative. */
+const Section: React.FC<{ eyebrow: string; title: string; children: React.ReactNode }> = ({
+  eyebrow,
+  title,
+  children,
+}) => (
+  <section>
+    <Label as="div">{eyebrow}</Label>
+    <h3 className="mt-2 font-display text-xl font-bold tracking-tight">{title}</h3>
+    <div className="mt-5">{children}</div>
+  </section>
+);
+
+/** Pannello di stato: il colore sta solo nella riga a sinistra. */
+const StatePanel: React.FC<{
+  tone: 'ok' | 'warn' | 'muted';
+  children: React.ReactNode;
+}> = ({ tone, children }) => {
+  const rules = { ok: 'border-l-ok', warn: 'border-l-warn', muted: 'border-l-white/20' };
+  return (
+    <Surface tone="inset" className={`border-l-2 ${rules[tone]}`}>
+      {children}
+    </Surface>
+  );
+};
 
 // Where the DJ's account id used to be a text field they filled in themselves.
 // It is now read-only here and written only by Stripe's own onboarding, because
@@ -32,9 +65,7 @@ const StripeConnectPanel: React.FC = () => {
   });
 
   if (isLoading || !status) {
-    return (
-      <div className="h-24 rounded-lg bg-gray-50 border border-gray-200 animate-pulse" />
-    );
+    return <div className="h-28 rounded-lg bg-ink-800 animate-pulse" />;
   }
 
   const complete = status.onboardingComplete;
@@ -43,25 +74,21 @@ const StripeConnectPanel: React.FC = () => {
   const started = Boolean(status.accountId) && !complete;
 
   return (
-    <div
-      className={`p-4 rounded-lg border ${
-        complete ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center mb-1">
-            {complete ? (
-              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 text-amber-600 mr-2" />
-            )}
-            <h4 className={`font-medium ${complete ? 'text-green-900' : 'text-amber-900'}`}>
-              {complete ? 'Incassi attivi' : started ? 'Verifica da completare' : 'Incassi da configurare'}
-            </h4>
+    <StatePanel tone={complete ? 'ok' : 'warn'}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <StatusDot tone={complete ? 'ok' : 'warn'} />
+            <Label as="div" tone={complete ? 'dim' : 'live'}>
+              Stripe
+            </Label>
           </div>
 
-          <p className={`text-sm ${complete ? 'text-green-800' : 'text-amber-800'}`}>
+          <p className="mt-2 font-medium text-bone">
+            {complete ? 'Incassi attivi' : started ? 'Verifica da completare' : 'Incassi da configurare'}
+          </p>
+
+          <p className="mt-1 text-[13px] text-bone-dim text-pretty">
             {complete
               ? 'Le donazioni dei tuoi ospiti arrivano direttamente sul tuo conto Stripe.'
               : started
@@ -70,7 +97,7 @@ const StripeConnectPanel: React.FC = () => {
           </p>
 
           {complete && !status.payoutsEnabled && (
-            <p className="text-sm text-green-800 mt-2">
+            <p className="mt-2 text-[13px] text-bone-dim text-pretty">
               I bonifici verso il tuo conto bancario non sono ancora attivi: Stripe trattiene
               gli incassi finché non completi gli ultimi dati richiesti.
             </p>
@@ -78,30 +105,31 @@ const StripeConnectPanel: React.FC = () => {
 
           {/* Only worth alarming them about once it actually blocks guests. */}
           {status.required && !complete && (
-            <p className="text-sm font-medium text-amber-900 mt-2">
+            <p className="mt-2 text-[13px] font-medium text-warn text-pretty">
               Finché non completi questo passaggio i tuoi ospiti non possono pagare le richieste.
             </p>
           )}
 
           {status.accountId && (
-            <p className="text-xs text-gray-500 mt-2 font-mono">{status.accountId}</p>
+            <p className="num mt-3 text-[11px] text-bone-faint break-all">{status.accountId}</p>
           )}
         </div>
 
         {/* Nothing left to ask Stripe for once charges and payouts are both on,
             so the link is offered only while something is still missing. */}
         {!(complete && status.payoutsEnabled) && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onboardMutation.mutate()}
             disabled={onboardMutation.isPending}
-            className="btn-secondary flex items-center whitespace-nowrap"
           >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            {onboardMutation.isPending ? 'Apertura...' : status.accountId ? 'Riprendi' : 'Configura'}
-          </button>
+            <ExternalLink className="h-4 w-4" />
+            {onboardMutation.isPending ? 'Apertura…' : status.accountId ? 'Riprendi' : 'Configura'}
+          </Button>
         )}
       </div>
-    </div>
+    </StatePanel>
   );
 };
 
@@ -145,7 +173,7 @@ const SatispayPanel: React.FC = () => {
   });
 
   if (isLoading || !status) {
-    return <div className="h-24 rounded-lg bg-gray-50 border border-gray-200 animate-pulse" />;
+    return <div className="h-28 rounded-lg bg-ink-800 animate-pulse" />;
   }
 
   const handleDisconnect = () => {
@@ -155,77 +183,67 @@ const SatispayPanel: React.FC = () => {
   };
 
   return (
-    <div
-      className={`p-4 rounded-lg border ${
-        status.connected ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center mb-1">
-            {status.connected ? (
-              <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-            ) : (
-              <Smartphone className="w-4 h-4 text-gray-500 mr-2" />
-            )}
-            <h4 className={`font-medium ${status.connected ? 'text-green-900' : 'text-gray-900'}`}>
-              Satispay {status.connected ? 'collegato' : '(opzionale)'}
-            </h4>
+    <StatePanel tone={status.connected ? 'ok' : 'muted'}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <StatusDot tone={status.connected ? 'ok' : 'muted'} />
+            <Label as="div">Satispay {status.connected ? '' : '· opzionale'}</Label>
           </div>
 
-          <p className={`text-sm ${status.connected ? 'text-green-800' : 'text-gray-600'}`}>
+          <p className="mt-2 font-medium text-bone">
+            {status.connected ? 'Collegato' : 'Non collegato'}
+          </p>
+
+          <p className="mt-1 text-[13px] text-bone-dim text-pretty">
             {status.connected
               ? 'I tuoi ospiti possono pagare con Satispay e l\'importo arriva sul tuo conto business.'
               : 'Collega il tuo conto Satispay Business per offrire Satispay ai tuoi ospiti.'}
           </p>
 
           {status.connected && (
-            <p className="text-xs text-gray-500 mt-2 font-mono">{status.keyId}</p>
+            <p className="num mt-3 text-[11px] text-bone-faint break-all">{status.keyId}</p>
           )}
 
-          <p className="text-xs text-gray-500 mt-1">{status.environment}</p>
+          <p className="num mt-1 text-[11px] text-bone-faint">{status.environment}</p>
         </div>
 
         {status.connected && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleDisconnect}
             disabled={disconnectMutation.isPending}
-            className="btn-secondary whitespace-nowrap"
           >
-            {disconnectMutation.isPending ? 'Scollegamento...' : 'Scollega'}
-          </button>
+            {disconnectMutation.isPending ? 'Scollegamento…' : 'Scollega'}
+          </Button>
         )}
       </div>
 
       {!status.connected && (
-        <div className="mt-4 flex items-start gap-2">
+        <div className="mt-4 pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row sm:items-start gap-3">
           <div className="flex-1">
-            <label className="form-label" htmlFor="satispay-activation-code">
-              Codice di attivazione
-            </label>
-            <input
+            <Field
               id="satispay-activation-code"
+              label="Codice di attivazione"
               type="text"
+              mono
               value={activationCode}
               onChange={(e) => setActivationCode(e.target.value)}
-              className="form-input font-mono"
               placeholder="Dal tuo Satispay Business Dashboard"
+              hint="Si trova in Impostazioni → Negozi online del dashboard Satispay Business. Vale una volta sola."
             />
-            <p className="text-sm text-gray-600 mt-1">
-              Si trova in Impostazioni → Negozi online del dashboard Satispay Business.
-              Vale una volta sola.
-            </p>
           </div>
-          <button
+          <Button
             onClick={() => connectMutation.mutate(activationCode.trim())}
             disabled={connectMutation.isPending || activationCode.trim().length < 6}
-            className="btn-primary whitespace-nowrap mt-7"
+            className="sm:mt-[26px]"
           >
-            {connectMutation.isPending ? 'Collegamento...' : 'Collega'}
-          </button>
+            {connectMutation.isPending ? 'Collegamento…' : 'Collega'}
+          </Button>
         </div>
       )}
-    </div>
+    </StatePanel>
   );
 };
 
@@ -240,11 +258,11 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
   const updateMutation = useMutation({
     mutationFn: djApi.updateSettings,
     onSuccess: () => {
-      toast.success('Settings updated successfully!');
+      toast.success('Impostazioni salvate');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to update settings';
+      const message = error.response?.data?.error || 'Non è stato possibile salvare le impostazioni';
       toast.error(message);
     },
   });
@@ -253,7 +271,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     e.preventDefault();
 
     if (formData.minDonation < 0.01 || formData.minDonation > 1000) {
-      toast.error('Minimum donation must be between €0.01 and €1000');
+      toast.error('La donazione minima deve essere fra 0,01 € e 1000 €');
       return;
     }
 
@@ -264,15 +282,16 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
     });
   };
 
+  const eventUrl = `${window.location.origin}/event/${dj.eventCode}`;
+
   const handleCopyEventUrl = () => {
-    const url = `${window.location.origin}/event/${dj.eventCode}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Event URL copied to clipboard!');
+    navigator.clipboard.writeText(eventUrl);
+    toast.success('Link dell\'evento copiato');
   };
 
   const handleCopyEventCode = () => {
     navigator.clipboard.writeText(dj.eventCode);
-    toast.success('Event code copied to clipboard!');
+    toast.success('Codice evento copiato');
   };
 
   const endEventMutation = useMutation({
@@ -284,7 +303,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
       queryClient.invalidateQueries({ queryKey: ['eventSummaries', dj.id] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to end event';
+      const message = error.response?.data?.error || 'Non è stato possibile terminare l\'evento';
       toast.error(message);
     },
   });
@@ -302,7 +321,7 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
       queryClient.invalidateQueries({ queryKey: ['eventSummaries', dj.id] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to delete event summary';
+      const message = error.response?.data?.error || 'Non è stato possibile cancellare l\'insight';
       toast.error(message);
     },
   });
@@ -320,331 +339,245 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Event Information */}
-      <div className="card">
-        <div className="flex items-center mb-4">
-          <QrCode className="w-5 h-5 text-primary-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">Event Information</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-10">
+      <Section eyebrow="Serata in corso" title="Evento">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="form-label">Event Code</label>
-            <div className="flex items-center space-x-2">
+            <span className="field-label">Codice evento</span>
+            <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={dj.eventCode}
                 readOnly
-                className="form-input font-mono text-lg font-bold bg-gray-50"
+                aria-label="Codice evento"
+                className="field font-mono tabular-nums text-lg font-semibold tracking-[0.15em]"
               />
-              <button
-                onClick={handleCopyEventCode}
-                className="btn-secondary flex items-center"
-              >
-                <Copy className="w-4 h-4 mr-1" />
-                Copy
-              </button>
+              <Button variant="ghost" onClick={handleCopyEventCode} aria-label="Copia il codice">
+                <Copy className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
           <div>
-            <label className="form-label">Event URL</label>
-            <div className="flex items-center space-x-2">
+            <span className="field-label">Link dell'evento</span>
+            <div className="flex items-center gap-2">
               <input
                 type="text"
-                value={`${window.location.origin}/event/${dj.eventCode}`}
+                value={eventUrl}
                 readOnly
-                className="form-input bg-gray-50 text-sm"
+                aria-label="Link dell'evento"
+                className="field text-[13px]"
               />
-              <button
-                onClick={handleCopyEventUrl}
-                className="btn-secondary flex items-center"
-              >
-                <Copy className="w-4 h-4 mr-1" />
-                Copy
-              </button>
+              <Button variant="ghost" onClick={handleCopyEventUrl} aria-label="Copia il link">
+                <Copy className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Event Management */}
-        <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-orange-900 mb-1">Gestione Evento</h4>
-              <p className="text-orange-700 text-sm">Termina l'evento corrente e salva il riassunto</p>
+        {/* Chiudere la serata è irreversibile: sta in fondo, staccato, con il rosso
+            riservato a questa singola azione. */}
+        <Surface tone="inset" className="mt-6 border-l-2 border-l-live">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-medium text-bone">Termina la serata</p>
+              <p className="mt-1 text-[13px] text-bone-dim text-pretty">
+                Salva il riassunto negli insights, svuota la coda, chiude le richieste
+                ancora aperte e azzera le statistiche. Il codice evento resta lo stesso.
+              </p>
             </div>
-            <button
+            <Button
+              variant="danger"
+              size="sm"
               onClick={handleEndEvent}
               disabled={endEventMutation.isPending}
-              className="btn-secondary flex items-center bg-red-100 hover:bg-red-200 text-red-800 border-red-300"
             >
-              {endEventMutation.isPending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
-                  Terminando...
-                </>
-              ) : (
-                <>
-                  <StopCircle className="w-4 h-4 mr-2" />
-                  Termina Evento
-                </>
-              )}
-            </button>
+              <StopCircle className="h-4 w-4" />
+              {endEventMutation.isPending ? 'Chiusura…' : 'Termina'}
+            </Button>
           </div>
-          
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <div className="flex items-start">
-              <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-yellow-800 text-xs">
-                <strong>Terminando l'evento:</strong>
-                <ul className="mt-1 space-y-0.5 list-disc list-inside ml-2">
-                  <li>Salva automaticamente il riassunto negli insights</li>
-                  <li>Svuota completamente la coda delle canzoni</li>
-                  <li>Chiude tutte le richieste pending e accepted</li>
-                  <li>Azzera le statistiche per il prossimo evento</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        </Surface>
+      </Section>
 
-      {/* Basic Settings */}
-      <form onSubmit={handleSubmit} className="card">
-        <div className="flex items-center mb-6">
-          <Settings className="w-5 h-5 text-primary-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">Basic Settings</h3>
-        </div>
+      <hr className="rule" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="form-label">DJ Name</label>
-            <input
+      <Section eyebrow="Profilo pubblico" title="Impostazioni">
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Field
+              label="Nome DJ"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="form-input"
+              required
+            />
+
+            <Field label="Email" type="email" value={dj.email} readOnly />
+
+            <Field
+              label="Donazione minima (€)"
+              type="number"
+              min="0.01"
+              max="1000"
+              step="0.01"
+              mono
+              value={formData.minDonation}
+              onChange={(e) => setFormData({ ...formData, minDonation: Number(e.target.value) })}
+              hint="Sotto questa cifra la richiesta non parte."
               required
             />
           </div>
 
-          <div>
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              value={dj.email}
-              readOnly
-              className="form-input bg-gray-50"
-            />
-          </div>
+          <Button type="submit" disabled={updateMutation.isPending} className="mt-6">
+            <Save className="h-4 w-4" />
+            {updateMutation.isPending ? 'Salvataggio…' : 'Salva'}
+          </Button>
+        </form>
+      </Section>
 
-          <div>
-            <label className="form-label">Minimum Donation (€)</label>
-            <div className="relative">
-              <Euro className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="number"
-                min="0.01"
-                max="1000"
-                step="0.01"
-                value={formData.minDonation}
-                onChange={(e) => setFormData({ ...formData, minDonation: Number(e.target.value) })}
-                className="form-input pl-10"
-                required
-              />
-            </div>
-            <p className="text-sm text-gray-600 mt-1">
-              Customers must donate at least this amount to request songs
-            </p>
-          </div>
-        </div>
+      <hr className="rule" />
 
-        <div className="mt-6">
-          <button
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="btn-primary flex items-center"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {updateMutation.isPending ? 'Saving...' : 'Save Settings'}
-          </button>
-        </div>
-      </form>
-
-      {/* Payment Settings */}
-      <div className="card">
-        <div className="flex items-center mb-6">
-          <CreditCard className="w-5 h-5 text-primary-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">Payment Settings</h3>
-        </div>
-
-        <div className="space-y-6">
+      <Section eyebrow="Dove arrivano i soldi" title="Incassi">
+        <div className="space-y-4">
           <StripeConnectPanel />
 
-          <div>
-            <label className="form-label">PayPal Email (Optional)</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="email"
-                value={formData.paypalEmail}
-                onChange={(e) => setFormData({ ...formData, paypalEmail: e.target.value })}
-                className="form-input pl-10"
-                placeholder="your@paypal.email"
-              />
-            </div>
-          </div>
-
           <SatispayPanel />
+
+          <Field
+            label="Email PayPal (facoltativa)"
+            type="email"
+            value={formData.paypalEmail}
+            onChange={(e) => setFormData({ ...formData, paypalEmail: e.target.value })}
+            placeholder="tua@paypal.email"
+            hint="Si salva insieme alle impostazioni qui sopra."
+          />
         </div>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">Come funzionano gli incassi:</h4>
-          <ul className="text-blue-800 text-sm space-y-1">
-            <li>• La donazione viene trattenuta e addebitata solo quando suoni la canzone</li>
-            <li>• Con Stripe o Satispay collegati l'importo arriva sul tuo conto, non sul nostro</li>
-            <li>• I metodi che non hai collegato non vengono proposti ai tuoi ospiti</li>
-          </ul>
-        </div>
-      </div>
+        <ul className="mt-6 pt-5 border-t border-white/[0.08] space-y-2 text-[13px] text-bone-dim">
+          <li>La donazione viene trattenuta e addebitata solo quando suoni la canzone.</li>
+          <li>Con Stripe o Satispay collegati l'importo arriva sul tuo conto, non sul nostro.</li>
+          <li>I metodi che non hai collegato non vengono proposti ai tuoi ospiti.</li>
+        </ul>
+      </Section>
 
-      {/* Event Insights */}
-      <div className="card">
-        <div className="flex items-center mb-4">
-          <BarChart3 className="w-5 h-5 text-primary-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">Insights Eventi</h3>
-        </div>
+      <hr className="rule" />
 
+      <Section eyebrow="Serate passate" title="Insights">
         {summariesLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <div className="space-y-3">
+            {[0, 1].map((i) => (
+              <div key={i} className="h-40 rounded-lg bg-ink-900 animate-pulse" />
+            ))}
           </div>
         ) : eventSummaries && eventSummaries.length > 0 ? (
-          <div className="space-y-4">
-            {eventSummaries.slice(0, 5).map((summary: EventSummary) => (
-              <div key={summary.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0">
-                    <span className="font-mono text-xs sm:text-sm bg-gray-100 px-2 py-1 rounded w-fit">
-                      {summary.eventCode}
-                    </span>
-                    <div className="sm:ml-3">
-                      <p className="text-xs sm:text-sm font-medium text-gray-900">
-                        {new Date(summary.startedAt).toLocaleDateString('it-IT')} - {new Date(summary.endedAt).toLocaleDateString('it-IT')}
+          <div className="space-y-3">
+            {eventSummaries.slice(0, 5).map((summary: EventSummary) => {
+              const days = Math.ceil(
+                (new Date(summary.endedAt).getTime() - new Date(summary.startedAt).getTime()) /
+                  (1000 * 60 * 60 * 24)
+              );
+              const rate =
+                summary.totalRequests > 0
+                  ? Math.round((summary.acceptedRequests / summary.totalRequests) * 100)
+                  : 0;
+
+              return (
+                <Surface key={summary.id}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <Label as="div">{summary.eventCode}</Label>
+                      <p className="num mt-1.5 text-[13px] text-bone-dim">
+                        {new Date(summary.startedAt).toLocaleDateString('it-IT')} —{' '}
+                        {new Date(summary.endedAt).toLocaleDateString('it-IT')}
+                        <span className="text-bone-faint"> · {days}g</span>
                       </p>
-                      <p className="text-xs text-gray-500">
-                        Durata: {Math.ceil((new Date(summary.endedAt).getTime() - new Date(summary.startedAt).getTime()) / (1000 * 60 * 60 * 24))} giorni
-                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex items-center text-green-600">
-                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                      <span className="font-semibold text-sm sm:text-base">€{Number(summary.totalEarnings).toFixed(2)}</span>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteEventSummary(summary.id, summary.eventCode)}
-                      disabled={deleteEventSummaryMutation.isPending}
-                      className="text-red-500 hover:text-red-700 transition-colors p-1"
-                      title="Cancella insight evento"
-                    >
-                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-sm mb-3">
-                  <div className="text-center bg-gray-50 rounded-lg p-2 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-600">Richieste</p>
-                    <p className="font-semibold text-sm sm:text-lg">{summary.totalRequests}</p>
-                  </div>
-                  <div className="text-center bg-green-50 rounded-lg p-2 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-600">Accettate</p>
-                    <p className="font-semibold text-sm sm:text-lg text-green-600">{summary.acceptedRequests}</p>
-                  </div>
-                  <div className="text-center bg-blue-50 rounded-lg p-2 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-600">Suonate</p>
-                    <p className="font-semibold text-sm sm:text-lg text-blue-600">{summary.playedSongs}</p>
-                  </div>
-                  <div className="text-center bg-orange-50 rounded-lg p-2 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-600">Skippate</p>
-                    <p className="font-semibold text-sm sm:text-lg text-orange-600">{summary.skippedSongs}</p>
-                  </div>
-                </div>
-                
-                <div className="pt-3 border-t border-gray-100">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs text-gray-600">
-                    <div className="flex justify-between sm:block">
-                      <span>Rifiutate:</span> 
-                      <span className="font-medium">{summary.rejectedRequests}</span>
-                    </div>
-                    <div className="flex justify-between sm:block">
-                      <span>Scadute:</span> 
-                      <span className="font-medium">{summary.expiredRequests}</span>
-                    </div>
-                    <div className="flex justify-between sm:block">
-                      <span>Chiuse:</span> 
-                      <span className="font-medium">{summary.closedRequests}</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-600 text-center sm:text-left">
-                    <div className="bg-gray-50 rounded px-2 py-1 inline-block">
-                      <span>Tasso accettazione: </span>
-                      <span className="font-medium text-green-600">
-                        {summary.totalRequests > 0 ? Math.round((summary.acceptedRequests / summary.totalRequests) * 100) : 0}%
+
+                    <div className="flex items-start gap-2 shrink-0">
+                      <span className="num text-xl font-semibold leading-none pt-0.5">
+                        {formatMoney(Number(summary.totalEarnings), true)}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteEventSummary(summary.id, summary.eventCode)}
+                        disabled={deleteEventSummaryMutation.isPending}
+                        title="Cancella insight evento"
+                        aria-label="Cancella insight evento"
+                        className="-mt-1.5 -mr-1.5 p-2 rounded-md text-bone-faint hover:text-live hover:bg-white/[0.06] transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-            
+
+                  {/* Griglia densa: in cabina si guarda di sfuggita, i numeri in mono
+                      restano allineati fra una serata e l'altra. */}
+                  <dl className="mt-4 pt-4 border-t border-white/[0.08] grid grid-cols-3 sm:grid-cols-6 gap-x-3 gap-y-3">
+                    {[
+                      { k: 'Richieste', v: summary.totalRequests },
+                      { k: 'Accettate', v: summary.acceptedRequests },
+                      { k: 'Suonate', v: summary.playedSongs },
+                      { k: 'Saltate', v: summary.skippedSongs },
+                      { k: 'Rifiutate', v: summary.rejectedRequests },
+                      { k: 'Scadute', v: summary.expiredRequests },
+                    ].map((cell) => (
+                      <div key={cell.k}>
+                        <dt className="label-mono text-bone-faint">{cell.k}</dt>
+                        <dd className="num mt-1 text-base font-semibold">{cell.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-baseline justify-between gap-4">
+                    <Label as="div">Tasso di accettazione</Label>
+                    <span className="num text-sm font-semibold">{rate}%</span>
+                  </div>
+                </Surface>
+              );
+            })}
+
             {eventSummaries.length > 5 && (
-              <p className="text-center text-gray-500 text-sm mt-4">
-                Mostrando gli ultimi 5 eventi. Totale eventi: {eventSummaries.length}
+              <p className="pt-2 text-[13px] text-bone-faint text-center">
+                Ultime 5 serate su {eventSummaries.length}.
               </p>
             )}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Nessun evento completato ancora</p>
-            <p className="text-gray-400 text-sm">Termina o crea un nuovo evento per vedere gli insights</p>
+          <div className="border border-white/[0.08] rounded-lg">
+            <EmptyState
+              title="Nessuna serata conclusa"
+              description="Quando termini un evento il riassunto compare qui."
+            />
           </div>
         )}
-      </div>
+      </Section>
 
-      {/* Account Information */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+      <hr className="rule" />
+
+      <Section eyebrow="Account" title="Il tuo profilo">
+        <dl className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div>
-            <label className="block text-gray-600">Account created</label>
-            <p className="font-medium text-gray-900">
-              {dj.createdAt ? new Date(dj.createdAt).toLocaleDateString() : 'N/A'}
-            </p>
+            <dt className="label-mono text-bone-faint">Registrato il</dt>
+            <dd className="num mt-1.5 text-sm">
+              {dj.createdAt ? new Date(dj.createdAt).toLocaleDateString('it-IT') : '—'}
+            </dd>
           </div>
 
           <div>
-            <label className="block text-gray-600">Evento corrente</label>
-            <p className="font-medium text-green-600">
-              {dj.eventCode} (Attivo)
-            </p>
+            <dt className="label-mono text-bone-faint">Evento corrente</dt>
+            <dd className="num mt-1.5 text-sm">{dj.eventCode}</dd>
           </div>
 
           {dj.updatedAt && (
             <div>
-              <label className="block text-gray-600">Last updated</label>
-              <p className="font-medium text-gray-900">
-                {new Date(dj.updatedAt).toLocaleDateString()}
-              </p>
+              <dt className="label-mono text-bone-faint">Ultima modifica</dt>
+              <dd className="num mt-1.5 text-sm">
+                {new Date(dj.updatedAt).toLocaleDateString('it-IT')}
+              </dd>
             </div>
           )}
-        </div>
-      </div>
+        </dl>
+      </Section>
     </div>
   );
 };

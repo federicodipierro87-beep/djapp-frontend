@@ -1,20 +1,65 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { Save, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { djApi } from '../services/api';
+import Button from './ui/Button';
+import Field from './ui/Field';
+import Label from './ui/Label';
 import type { DJ } from '../types';
 
 interface DJProfileProps {
   dj: DJ;
 }
 
+/** Campo password con l'occhio: si digita al buio, poterla rileggere serve. */
+const PasswordField: React.FC<{
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  hint?: string;
+  minLength?: number;
+  autoComplete: string;
+}> = ({ id, label, value, onChange, placeholder, hint, minLength, autoComplete }) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div>
+      <label htmlFor={id} className="field-label">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="field pr-12"
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          minLength={minLength}
+          required
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(!visible)}
+          aria-label={visible ? 'Nascondi la password' : 'Mostra la password'}
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 rounded-md
+                     text-bone-faint hover:text-bone hover:bg-white/[0.06] transition-colors"
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      {hint && <p className="mt-1.5 text-[13px] text-bone-faint">{hint}</p>}
+    </div>
+  );
+};
+
 const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const [profileData, setProfileData] = useState({
     name: dj.name || '',
     firstName: dj.firstName || '',
@@ -60,7 +105,7 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!profileData.name.trim()) {
       toast.error('Il nome DJ è obbligatorio');
       return;
@@ -71,17 +116,17 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!passwordData.currentPassword) {
       toast.error('Inserisci la password attuale');
       return;
     }
-    
+
     if (!passwordData.newPassword || passwordData.newPassword.length < 6) {
       toast.error('La nuova password deve essere di almeno 6 caratteri');
       return;
     }
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('Le password non coincidono');
       return;
@@ -94,200 +139,120 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-      <div className="flex items-center mb-6">
-        <User className="w-8 h-8 text-primary-600 mr-3" />
-        <h2 className="text-2xl font-bold text-gray-900">
-          Il Mio Profilo
-        </h2>
-      </div>
+    <div className="max-w-2xl">
+      <Label as="div">Account</Label>
+      <h3 className="mt-2 font-display text-xl font-bold tracking-tight">Il tuo profilo</h3>
 
-      {/* Tabs */}
-      <div className="mb-6">
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+      {/* Due sole schede: sottolineatura, non pillole dentro un riquadro grigio. */}
+      <div className="mt-5 flex items-center gap-6 border-b border-white/[0.08]">
+        {([
+          { id: 'profile', label: 'Dati personali' },
+          { id: 'password', label: 'Password' },
+        ] as const).map((tab) => (
           <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'profile'
-                ? 'bg-white text-primary-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`-mb-px pb-3 text-sm border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? 'border-bone text-bone font-medium'
+                : 'border-transparent text-bone-dim hover:text-bone'
             }`}
           >
-            Informazioni Personali
+            {tab.label}
           </button>
-          <button
-            onClick={() => setActiveTab('password')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'password'
-                ? 'bg-white text-primary-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Cambia Password
-          </button>
-        </div>
+        ))}
       </div>
 
-      {/* Profile Tab */}
       {activeTab === 'profile' && (
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Nome DJ *
-            </label>
-            <input
+        <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
+          <Field
+            label="Nome DJ"
+            type="text"
+            value={profileData.name}
+            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+            placeholder="Come ti annunci"
+            hint="È il nome che vedono i tuoi ospiti."
+            required
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field
+              label="Nome"
               type="text"
-              value={profileData.name}
-              onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Il tuo nome DJ"
-              required
+              value={profileData.firstName}
+              onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+              autoComplete="given-name"
+            />
+
+            <Field
+              label="Cognome"
+              type="text"
+              value={profileData.lastName}
+              onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+              autoComplete="family-name"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Nome
-              </label>
-              <input
-                type="text"
-                value={profileData.firstName}
-                onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Il tuo nome"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Cognome
-              </label>
-              <input
-                type="text"
-                value={profileData.lastName}
-                onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Il tuo cognome"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
+            <label htmlFor="dj-address" className="field-label">
               Indirizzo
             </label>
             <textarea
+              id="dj-address"
               value={profileData.address}
               onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-              placeholder="Il tuo indirizzo completo"
+              className="field resize-none"
+              placeholder="Via, città, CAP"
+              autoComplete="street-address"
             />
-          </div>
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={profileMutation.isPending}
-              className="w-full btn-primary flex items-center justify-center"
-            >
-              <Save className="w-5 h-5 mr-2" />
-              {profileMutation.isPending ? 'Aggiornamento...' : 'Salva Profilo'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Password Tab */}
-      {activeTab === 'password' && (
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Password Attuale *
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Inserisci la password attuale"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Nuova Password *
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type={showNewPassword ? 'text' : 'password'}
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Inserisci la nuova password"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            <p className="text-gray-500 text-xs mt-1">
-              La password deve essere di almeno 6 caratteri
+            <p className="mt-1.5 text-[13px] text-bone-faint">
+              Serve solo per la fatturazione: non viene mostrato a nessuno.
             </p>
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              Conferma Nuova Password *
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Conferma la nuova password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
+          <Button type="submit" disabled={profileMutation.isPending} className="!mt-6">
+            <Save className="h-4 w-4" />
+            {profileMutation.isPending ? 'Salvataggio…' : 'Salva'}
+          </Button>
+        </form>
+      )}
 
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={passwordMutation.isPending}
-              className="w-full btn-primary flex items-center justify-center"
-            >
-              <Lock className="w-5 h-5 mr-2" />
-              {passwordMutation.isPending ? 'Aggiornamento...' : 'Cambia Password'}
-            </button>
-          </div>
+      {activeTab === 'password' && (
+        <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-4">
+          <PasswordField
+            id="current-password"
+            label="Password attuale"
+            value={passwordData.currentPassword}
+            onChange={(v) => setPasswordData({ ...passwordData, currentPassword: v })}
+            placeholder="••••••••"
+            autoComplete="current-password"
+          />
+
+          <PasswordField
+            id="new-password"
+            label="Nuova password"
+            value={passwordData.newPassword}
+            onChange={(v) => setPasswordData({ ...passwordData, newPassword: v })}
+            placeholder="••••••••"
+            hint="Almeno 6 caratteri."
+            minLength={6}
+            autoComplete="new-password"
+          />
+
+          <PasswordField
+            id="confirm-password"
+            label="Conferma la nuova password"
+            value={passwordData.confirmPassword}
+            onChange={(v) => setPasswordData({ ...passwordData, confirmPassword: v })}
+            placeholder="••••••••"
+            autoComplete="new-password"
+          />
+
+          <Button type="submit" disabled={passwordMutation.isPending} className="!mt-6">
+            {passwordMutation.isPending ? 'Aggiornamento…' : 'Cambia password'}
+          </Button>
         </form>
       )}
     </div>

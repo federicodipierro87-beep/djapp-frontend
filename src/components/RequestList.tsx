@@ -1,8 +1,12 @@
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Clock, CheckCircle, X, Music, Euro, User } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { requestsApi } from '../services/api';
+import Button from './ui/Button';
+import Label from './ui/Label';
+import EmptyState from './ui/EmptyState';
+import { formatMoney } from './ui/format';
 import { Request } from '../types';
 
 interface RequestListProps {
@@ -10,15 +14,37 @@ interface RequestListProps {
   onUpdate: () => void;
 }
 
+// Sotto i cinque minuti il countdown diventa rosso: è l'unica cosa rossa della
+// schermata, quindi si vede senza cercarla.
+const EXPIRING_MS = 300000;
+
+const PAYMENT_LABELS: Record<string, string> = {
+  CARD: 'Carta',
+  APPLE_PAY: 'Apple Pay',
+  GOOGLE_PAY: 'Google Pay',
+  PAYPAL: 'PayPal',
+  SATISPAY: 'Satispay',
+};
+
+const formatTimeRemaining = (timeRemaining: number) => {
+  const minutes = Math.floor(timeRemaining / 60000);
+  const seconds = Math.floor((timeRemaining % 60000) / 1000);
+
+  if (timeRemaining <= 0) return 'Scaduta';
+  if (minutes >= 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+};
+
 const RequestList: React.FC<RequestListProps> = ({ requests, onUpdate }) => {
   const acceptMutation = useMutation({
     mutationFn: requestsApi.accept,
     onSuccess: () => {
-      toast.success('Request accepted and added to queue!');
+      toast.success('Richiesta accettata e aggiunta alla coda');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to accept request';
+      const message = error.response?.data?.error || 'Non è stato possibile accettare la richiesta';
       toast.error(message);
     },
   });
@@ -26,173 +52,125 @@ const RequestList: React.FC<RequestListProps> = ({ requests, onUpdate }) => {
   const rejectMutation = useMutation({
     mutationFn: requestsApi.reject,
     onSuccess: () => {
-      toast.success('Request rejected');
+      toast.success('Richiesta rifiutata');
       onUpdate();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to reject request';
+      const message = error.response?.data?.error || 'Non è stato possibile rifiutare la richiesta';
       toast.error(message);
     },
   });
 
-  const formatTimeRemaining = (timeRemaining: number) => {
-    const minutes = Math.floor(timeRemaining / 60000);
-    const seconds = Math.floor((timeRemaining % 60000) / 1000);
-    
-    if (timeRemaining <= 0) return 'EXPIRED';
-    if (minutes >= 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds}s`;
-  };
-
-  const getPaymentMethodDisplay = (method: string) => {
-    switch (method) {
-      case 'CARD':
-        return 'Credit Card';
-      case 'APPLE_PAY':
-        return 'Apple Pay';
-      case 'GOOGLE_PAY':
-        return 'Google Pay';
-      case 'PAYPAL':
-        return 'PayPal';
-      case 'SATISPAY':
-        return 'Satispay';
-      default:
-        return method;
-    }
-  };
-
   if (requests.length === 0) {
     return (
-      <div className="card text-center py-12">
-        <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No pending requests</h3>
-        <p className="text-gray-600">New song requests will appear here for you to review.</p>
+      <div className="border border-white/[0.08] rounded-lg">
+        <EmptyState
+          eyebrow="In attesa"
+          title="Nessuna richiesta da decidere"
+          description="Le nuove richieste compaiono qui appena arrivano."
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">
-          Pending Requests ({requests.length})
-        </h2>
-        <p className="text-sm text-gray-600">
-          Review and accept/reject song requests from your audience
-        </p>
+    <div>
+      <div className="flex items-baseline justify-between gap-4">
+        <Label as="div">Da decidere</Label>
+        <span className="num text-[11px] text-bone-faint">{requests.length}</span>
       </div>
 
-      <div className="space-y-4">
+      <ul className="mt-4 space-y-3">
         {requests.map((request) => {
           const timeRemaining = request.timeRemaining;
-          const isExpiring = timeRemaining > 0 && timeRemaining < 300000; // Less than 5 minutes
+          const isExpiring = timeRemaining > 0 && timeRemaining < EXPIRING_MS;
           const isExpired = timeRemaining <= 0;
 
           return (
-            <div 
-              key={request.id} 
-              className={`card transition-all duration-300 ${
-                isExpired ? 'opacity-50 bg-gray-50' : ''
-              } ${
-                isExpiring ? 'border-orange-300 bg-orange-50' : ''
+            <li
+              key={request.id}
+              className={`bg-ink-900 border rounded-lg p-4 sm:p-5 transition-colors ${
+                isExpired
+                  ? 'border-white/[0.06] opacity-50'
+                  : isExpiring
+                    ? 'border-live/50'
+                    : 'border-white/[0.08]'
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  {/* Song Info */}
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                      <Music className="w-6 h-6 text-primary-600" />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {request.songTitle}
-                        </h3>
-                        <div className="flex items-center space-x-2">
-                          <Euro className="w-4 h-4 text-green-600" />
-                          <span className="text-xl font-bold text-green-700">
-                            €{request.donationAmount}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-600 mb-1">by {request.artistName}</p>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <User className="w-4 h-4 mr-1" />
-                          {request.requesterName}
-                        </div>
-                        {request.requesterEmail && (
-                          <div className="flex items-center">
-                            <span>•</span>
-                            <span className="ml-1">{request.requesterEmail}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center">
-                          <span>•</span>
-                          <span className="ml-1">{getPaymentMethodDisplay(request.paymentMethod)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="font-display text-lg font-semibold leading-snug truncate">
+                    {request.songTitle}
+                  </h3>
+                  <p className="mt-0.5 text-sm text-bone-dim truncate">{request.artistName}</p>
+                </div>
 
-                  {/* Timer */}
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className={`flex items-center ${isExpiring ? 'text-orange-600' : isExpired ? 'text-red-600' : 'text-gray-600'}`}>
-                      <Clock className="w-4 h-4 mr-2" />
-                      <span className={`font-medium ${isExpiring || isExpired ? 'font-bold' : ''}`}>
-                        {isExpired ? 'EXPIRED' : `${formatTimeRemaining(timeRemaining)} remaining`}
-                      </span>
-                    </div>
+                {/* La cifra è la ragione per cui il DJ sta guardando questa riga. */}
+                <span className="num text-2xl font-semibold leading-none shrink-0">
+                  {formatMoney(request.donationAmount, true)}
+                </span>
+              </div>
 
-                    {!isExpired && (
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={() => rejectMutation.mutate(request.id)}
-                          disabled={rejectMutation.isPending}
-                          className="btn-danger flex items-center"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          Reject
-                        </button>
-                        
-                        <button
-                          onClick={() => acceptMutation.mutate(request.id)}
-                          disabled={acceptMutation.isPending}
-                          className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Accept & Add to Queue
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-bone-dim">
+                <span className="truncate">{request.requesterName}</span>
+                {request.requesterEmail && (
+                  <>
+                    <span className="text-bone-faint">·</span>
+                    <span className="truncate">{request.requesterEmail}</span>
+                  </>
+                )}
+                <span className="text-bone-faint">·</span>
+                <span>{PAYMENT_LABELS[request.paymentMethod] ?? request.paymentMethod}</span>
+              </div>
 
-                  {isExpiring && !isExpired && (
-                    <div className="mt-3 p-3 bg-orange-100 border border-orange-200 rounded-lg">
-                      <p className="text-orange-800 text-sm font-medium">
-                        ⚠️ This request expires soon! Make a decision quickly.
-                      </p>
-                    </div>
-                  )}
-
-                  {isExpired && (
-                    <div className="mt-3 p-3 bg-red-100 border border-red-200 rounded-lg">
-                      <p className="text-red-800 text-sm font-medium">
-                        ❌ This request has expired and the payment was automatically cancelled.
-                      </p>
-                    </div>
+              <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
+                <div>
+                  <Label as="div" tone={isExpiring || isExpired ? 'live' : 'dim'}>
+                    {isExpired ? 'Scaduta' : 'Scade tra'}
+                  </Label>
+                  {!isExpired && (
+                    <p
+                      className={`num mt-1.5 text-base font-semibold leading-none ${
+                        isExpiring ? 'text-live' : 'text-bone'
+                      }`}
+                    >
+                      {formatTimeRemaining(timeRemaining)}
+                    </p>
                   )}
                 </div>
+
+                {/* Accetta e rifiuta stanno lontani: si preme al volo, al buio. */}
+                {!isExpired && (
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      onClick={() => rejectMutation.mutate(request.id)}
+                      disabled={rejectMutation.isPending}
+                    >
+                      <X className="h-4 w-4" />
+                      Rifiuta
+                    </Button>
+
+                    <Button
+                      onClick={() => acceptMutation.mutate(request.id)}
+                      disabled={acceptMutation.isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                      Accetta
+                    </Button>
+                  </div>
+                )}
               </div>
-            </div>
+
+              {isExpired && (
+                <p className="mt-3 text-[13px] text-bone-faint">
+                  L'autorizzazione è decaduta: nessun addebito è stato fatto.
+                </p>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 };

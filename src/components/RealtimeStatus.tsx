@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import Label from './ui/Label';
+import StatusDot from './ui/StatusDot';
 
 const OFFLINE_GRACE_MS = 3000;
 
@@ -28,11 +30,11 @@ export default function RealtimeStatus({ connected }: RealtimeStatusProps) {
   if (connected) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700"
+        className="inline-flex items-center gap-2"
         title="Le nuove richieste arrivano in tempo reale"
       >
-        <span className="h-2 w-2 rounded-full bg-green-500" />
-        Live
+        <StatusDot tone="ok" pulse />
+        <Label>Live</Label>
       </span>
     );
   }
@@ -41,11 +43,11 @@ export default function RealtimeStatus({ connected }: RealtimeStatusProps) {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700"
+      className="inline-flex items-center gap-2"
       title="Le richieste arrivano comunque, ma con qualche secondo di ritardo finché il collegamento non torna"
     >
-      <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-      Riconnessione…
+      <StatusDot tone="warn" pulse />
+      <Label className="text-warn">Riconnessione</Label>
     </span>
   );
 }

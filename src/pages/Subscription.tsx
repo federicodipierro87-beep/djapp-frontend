@@ -1,11 +1,58 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Music, Check, Crown, Zap, ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { subscriptionApi } from '../services/api';
 import { logout } from '../services/session';
+import Logo from '../components/Logo';
+import Button from '../components/ui/Button';
+import Label from '../components/ui/Label';
 import type { SubscriptionPlan } from '../types';
+
+const PLANS = [
+  {
+    id: 'MONTHLY' as SubscriptionPlan,
+    name: 'Mensile',
+    price: '4,99 €',
+    period: 'al mese',
+    note: null as string | null,
+    features: [
+      'Pannello DJ completo',
+      'Richieste in tempo reale',
+      'Coda senza limiti',
+      'Statistiche di ogni serata',
+      'QR code per gli eventi',
+    ],
+  },
+  {
+    id: 'ANNUAL' as SubscriptionPlan,
+    name: 'Annuale',
+    price: '49 €',
+    period: "all'anno",
+    note: '4,08 € al mese · due mesi in regalo',
+    features: [
+      'Tutto quello del mensile',
+      'Risparmi il 18%',
+      'Accesso anticipato alle novità',
+    ],
+  },
+];
+
+const FAQ = [
+  {
+    q: 'Cosa succede dopo i sette giorni?',
+    a: 'Parte il rinnovo del piano che hai scelto. Puoi annullare in qualsiasi momento prima della fine della prova, senza che ti venga addebitato nulla.',
+  },
+  {
+    q: 'Posso cambiare piano?',
+    a: 'Sì, dal portale di gestione dell\'abbonamento, in qualsiasi momento, in entrambe le direzioni.',
+  },
+  {
+    q: 'Come si annulla?',
+    a: 'Dalle impostazioni del tuo account. L\'accesso resta attivo fino alla fine del periodo già pagato.',
+  },
+];
 
 const Subscription: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('ANNUAL');
@@ -46,8 +93,8 @@ const Subscription: React.FC = () => {
 
   if (statusLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-green-400 animate-spin" />
+      <div className="min-h-screen bg-ink-950 flex items-center justify-center">
+        <div className="h-8 w-32 rounded bg-ink-900 animate-pulse" />
       </div>
     );
   }
@@ -58,198 +105,96 @@ const Subscription: React.FC = () => {
     return null;
   }
 
-  const plans = [
-    {
-      id: 'MONTHLY' as SubscriptionPlan,
-      name: 'Mensile',
-      price: '4.99',
-      period: '/mese',
-      features: [
-        'Accesso completo al pannello DJ',
-        'Gestione richieste in tempo reale',
-        'Coda canzoni illimitata',
-        'Statistiche dettagliate',
-        'QR Code eventi',
-        'Supporto prioritario'
-      ],
-      popular: false
-    },
-    {
-      id: 'ANNUAL' as SubscriptionPlan,
-      name: 'Annuale',
-      price: '49',
-      period: '/anno',
-      monthlyEquivalent: '4.08',
-      discount: '18%',
-      features: [
-        'Tutto del piano Mensile',
-        'Risparmia il 18%',
-        '2 mesi gratis',
-        'Accesso anticipato nuove funzionalità',
-        'Badge DJ Pro'
-      ],
-      popular: true
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-green-900/20 to-black"></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-green-500/10 via-transparent to-green-400/10"></div>
-        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-gradient-to-tl from-green-400/20 via-transparent to-transparent rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-ink-950">
+      <div className="px-4 sm:px-6 py-5 flex items-center justify-between gap-4">
+        <Logo size="md" />
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="inline-flex items-center gap-1.5 text-[13px] text-bone-dim hover:text-bone transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Esci
+        </button>
       </div>
 
-      <div className="relative z-10 min-h-screen px-4 py-8">
-        {/* Header */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleLogout}
-              className="flex items-center text-green-300 hover:text-green-400 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Esci
-            </button>
-            <div className="flex items-center">
-              <Music className="w-6 h-6 text-green-400 mr-2" />
-              <span className="text-white font-semibold">DJ Request App</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center bg-green-500/20 border border-green-400/30 rounded-full px-4 py-2 mb-6">
-            <Zap className="w-4 h-4 text-green-400 mr-2" />
-            <span className="text-green-300 text-sm font-medium">7 giorni di prova gratuita</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ textShadow: '0 0 30px rgba(34, 197, 94, 0.5)' }}>
-            Scegli il tuo piano
+      <main className="px-4 sm:px-6 pb-20 max-w-3xl mx-auto">
+        <header className="pt-8 sm:pt-12">
+          <Label as="div">Sette giorni di prova</Label>
+          <h1 className="mt-3 font-display text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]">
+            Scegli il piano.
           </h1>
-          <p className="text-green-100 text-lg max-w-2xl mx-auto">
-            Inizia con 7 giorni di prova gratuita. Nessun addebito fino alla fine del periodo di prova.
+          <p className="mt-4 text-sm sm:text-base text-bone-dim max-w-lg text-pretty">
+            Nessun addebito fino alla fine della prova. Puoi annullare prima e non paghi niente.
           </p>
-        </div>
+        </header>
 
-        {/* Plans */}
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 mb-12">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              onClick={() => setSelectedPlan(plan.id)}
-              className={`relative bg-green-900/20 backdrop-blur-lg rounded-2xl p-6 border-2 cursor-pointer transition-all duration-300 ${
-                selectedPlan === plan.id
-                  ? 'border-green-400 shadow-lg shadow-green-400/30 scale-[1.02]'
-                  : 'border-green-400/30 hover:border-green-400/50'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-green-500 to-green-400 text-black text-xs font-bold px-4 py-1 rounded-full flex items-center">
-                    <Crown className="w-3 h-3 mr-1" />
-                    PIU' POPOLARE
-                  </div>
-                </div>
-              )}
-
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                <div className="flex items-baseline justify-center">
-                  <span className="text-4xl font-bold text-green-400">€{plan.price}</span>
-                  <span className="text-green-200 ml-1">{plan.period}</span>
-                </div>
-                {plan.monthlyEquivalent && (
-                  <p className="text-green-300 text-sm mt-1">
-                    (€{plan.monthlyEquivalent}/mese)
-                  </p>
-                )}
-                {plan.discount && (
-                  <span className="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded mt-2">
-                    RISPARMI {plan.discount}
-                  </span>
-                )}
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-green-100 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div
-                className={`w-6 h-6 rounded-full border-2 mx-auto flex items-center justify-center transition-colors ${
-                  selectedPlan === plan.id
-                    ? 'border-green-400 bg-green-400'
-                    : 'border-green-400/50'
+        {/* Due opzioni sole: il confronto è fra due prezzi, non fra due vetrine. */}
+        <div role="radiogroup" aria-label="Piano di abbonamento" className="mt-10 grid sm:grid-cols-2 gap-3">
+          {PLANS.map((plan) => {
+            const selected = selectedPlan === plan.id;
+            return (
+              <button
+                key={plan.id}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => setSelectedPlan(plan.id)}
+                className={`text-left rounded-lg p-5 border transition-colors ${
+                  selected
+                    ? 'bg-ink-900 border-white/40'
+                    : 'bg-ink-900 border-white/[0.08] hover:border-white/20'
                 }`}
               >
-                {selectedPlan === plan.id && (
-                  <Check className="w-4 h-4 text-black" />
-                )}
-              </div>
-            </div>
-          ))}
+                <div className="flex items-start justify-between gap-3">
+                  <Label as="div" tone={selected ? 'live' : 'dim'}>
+                    {plan.name}
+                  </Label>
+                  <span
+                    className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 ${
+                      selected ? 'border-bone bg-bone' : 'border-white/25'
+                    }`}
+                  >
+                    {selected && <Check className="h-3 w-3 text-ink-950" strokeWidth={3} />}
+                  </span>
+                </div>
+
+                <p className="num mt-4 text-3xl font-semibold leading-none">{plan.price}</p>
+                <p className="mt-1.5 text-[13px] text-bone-dim">{plan.period}</p>
+                {plan.note && <p className="mt-1 text-[13px] text-bone-faint">{plan.note}</p>}
+
+                <ul className="mt-5 pt-4 border-t border-white/[0.08] space-y-1.5 text-[13px] text-bone-dim">
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
         </div>
 
-        {/* CTA */}
-        <div className="max-w-md mx-auto text-center">
-          <button
-            onClick={handleCheckout}
-            disabled={checkoutMutation.isPending}
-            className="w-full bg-gradient-to-r from-green-500 to-green-400 text-black font-bold py-4 px-8 rounded-xl hover:from-green-400 hover:to-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-400/30 hover:shadow-green-400/50 disabled:opacity-50 disabled:transform-none flex items-center justify-center"
-          >
-            {checkoutMutation.isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Reindirizzamento...
-              </>
-            ) : (
-              <>
-                Inizia la prova gratuita
-              </>
-            )}
-          </button>
-          <p className="text-green-300/70 text-sm mt-4">
-            Annulla in qualsiasi momento durante il periodo di prova.
-            <br />
-            Non ti verrà addebitato nulla fino al termine dei 7 giorni.
+        <div className="mt-8">
+          <Button block onClick={handleCheckout} disabled={checkoutMutation.isPending}>
+            {checkoutMutation.isPending ? 'Reindirizzamento…' : 'Inizia la prova gratuita'}
+          </Button>
+          <p className="mt-3 text-[13px] text-bone-faint text-center text-pretty">
+            Paghi con Stripe. Nessun addebito prima del settimo giorno.
           </p>
         </div>
 
-        {/* FAQ / Trust Signals */}
-        <div className="max-w-2xl mx-auto mt-16 text-center">
-          <h3 className="text-white font-semibold mb-4">Domande frequenti</h3>
-          <div className="space-y-4 text-left">
-            <div className="bg-green-900/10 border border-green-400/20 rounded-lg p-4">
-              <h4 className="text-green-300 font-medium mb-1">Cosa succede dopo i 7 giorni?</h4>
-              <p className="text-green-200/70 text-sm">
-                Dopo il periodo di prova, verrai addebitato automaticamente per il piano scelto.
-                Puoi annullare in qualsiasi momento prima della fine della prova.
-              </p>
-            </div>
-            <div className="bg-green-900/10 border border-green-400/20 rounded-lg p-4">
-              <h4 className="text-green-300 font-medium mb-1">Posso cambiare piano in seguito?</h4>
-              <p className="text-green-200/70 text-sm">
-                Si, puoi passare dal piano mensile a quello annuale (o viceversa) in qualsiasi momento
-                dal portale di gestione abbonamento.
-              </p>
-            </div>
-            <div className="bg-green-900/10 border border-green-400/20 rounded-lg p-4">
-              <h4 className="text-green-300 font-medium mb-1">Come posso annullare?</h4>
-              <p className="text-green-200/70 text-sm">
-                Puoi annullare l'abbonamento in qualsiasi momento dalle impostazioni del tuo account.
-                L'accesso rimarrà attivo fino alla fine del periodo pagato.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+        <section className="mt-16 pt-8 border-t border-white/[0.08]">
+          <Label as="div">Domande</Label>
+          <dl className="mt-5 divide-y divide-white/[0.08]">
+            {FAQ.map((item) => (
+              <div key={item.q} className="py-4">
+                <dt className="font-medium text-bone">{item.q}</dt>
+                <dd className="mt-1.5 text-[13px] text-bone-dim text-pretty">{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </main>
     </div>
   );
 };

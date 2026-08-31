@@ -5,28 +5,22 @@ import 'leaflet/dist/leaflet.css';
 import type { Event } from '../types';
 import EventMarker from './EventMarker';
 
-// Fix default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
-
+// Ogni marker è un divIcon nel linguaggio del design system, quindi le icone
+// PNG di default di Leaflet non servono più: niente CDN esterno da caricare.
 const userLocationIcon = L.divIcon({
   className: 'user-location-marker',
   html: `
     <div style="
-      background-color: #3b82f6;
-      width: 20px;
-      height: 20px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      border: 4px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      background: #F5F4F0;
+      border: 3px solid #08080A;
+      box-shadow: 0 0 0 1px rgba(245,244,240,0.5);
     "></div>
   `,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
 });
 
 interface MapCenterProps {
@@ -66,12 +60,16 @@ const EventMap: React.FC<EventMapProps> = ({
     <MapContainer
       center={mapCenter}
       zoom={zoom}
-      className="h-full w-full rounded-lg"
+      className="h-full w-full rounded-lg bg-ink-900"
       style={{ minHeight: '400px' }}
     >
+      {/* Tile scure CARTO: gratuite e senza chiave. Le tile OSM chiare
+          dentro un'interfaccia nera stonavano. */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        subdomains="abcd"
+        maxZoom={20}
       />
 
       {center && <MapCenter center={center} />}
@@ -82,9 +80,7 @@ const EventMap: React.FC<EventMapProps> = ({
           icon={userLocationIcon}
         >
           <Popup>
-            <div className="text-center">
-              <span className="font-medium text-gray-900">La tua posizione</span>
-            </div>
+            <span className="label-mono">La tua posizione</span>
           </Popup>
         </Marker>
       )}
