@@ -169,10 +169,6 @@ export const djApi = {
     return response.data;
   },
 
-  generateNewEventCode: async (): Promise<{ message: string; eventCode: string; eventUrl: string }> => {
-    const response = await api.post('/dj/event/new');
-    return response.data;
-  },
   endCurrentEvent: async (): Promise<{ message: string; summary: any }> => {
     const response = await api.post('/dj/event/end');
     return response.data;

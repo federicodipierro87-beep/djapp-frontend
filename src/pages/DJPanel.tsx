@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LogOut, QrCode, RefreshCw, Copy } from 'lucide-react';
+import { LogOut, QrCode, Plus, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authApi, requestsApi, queueApi, djApi, subscriptionApi } from '../services/api';
 import { logout } from '../services/session';
@@ -11,6 +11,7 @@ import DJProfile from '../components/DJProfile';
 import QRCodeModal from '../components/QRCodeModal';
 import SubscriptionStatus from '../components/SubscriptionStatus';
 import EventList from '../components/EventList';
+import EventFormModal from '../components/EventFormModal';
 import { useSocket } from '../hooks/useSocket';
 import RealtimeStatus from '../components/RealtimeStatus';
 import Logo from '../components/Logo';
@@ -55,6 +56,7 @@ const Stat: React.FC<{ label: string; value: React.ReactNode; tone?: 'default' |
 const DJPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('requests');
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
   const [qrData, setQrData] = useState<{ qrCode: string; eventCode: string; eventUrl: string } | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -118,21 +120,6 @@ const DJPanel: React.FC = () => {
     refetchInterval: fallbackPollMs,
   });
 
-  const newEventMutation = useMutation({
-    mutationFn: djApi.generateNewEventCode,
-    onSuccess: () => {
-      toast.success('Nuovo evento iniziato!');
-      queryClient.invalidateQueries({ queryKey: ['dj-me'] });
-      queryClient.invalidateQueries({ queryKey: ['dj-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['dj-queue'] });
-      queryClient.invalidateQueries({ queryKey: ['dj-stats'] });
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || 'Errore nel creare nuovo evento';
-      toast.error(message);
-    },
-  });
-
   const qrMutation = useMutation({
     mutationFn: djApi.generateQRCode,
     onSuccess: (data) => {
@@ -145,10 +132,12 @@ const DJPanel: React.FC = () => {
     },
   });
 
+  // Stesso form della sezione Eventi. Si passa anche alla scheda Eventi: l'evento
+  // appena creato nasce programmato, e da lì si attiva - senza il cambio di
+  // scheda il DJ chiude il form e non vede niente cambiare.
   const handleNewEvent = () => {
-    if (window.confirm('Attenzione: l\'evento corrente verrà terminato automaticamente e verrà salvato un riassunto negli insights. Vuoi procedere con la creazione del nuovo evento?')) {
-      newEventMutation.mutate();
-    }
+    setActiveTab('events');
+    setShowEventForm(true);
   };
 
   const handleLogout = () => {
@@ -262,9 +251,9 @@ const DJPanel: React.FC = () => {
                 <span className="hidden sm:inline">Copia link</span>
                 <span className="sm:hidden">Link</span>
               </Button>
-              <Button size="sm" onClick={handleNewEvent} disabled={newEventMutation.isPending}>
-                <RefreshCw className="h-4 w-4" />
-                {newEventMutation.isPending ? 'Avvio…' : 'Nuovo evento'}
+              <Button size="sm" onClick={handleNewEvent}>
+                <Plus className="h-4 w-4" />
+                Nuovo evento
               </Button>
               <Button variant="quiet" size="sm" onClick={handleLogout} aria-label="Esci">
                 <LogOut className="h-4 w-4" />
@@ -363,6 +352,8 @@ const DJPanel: React.FC = () => {
           />
         )}
       </main>
+
+      <EventFormModal isOpen={showEventForm} onClose={() => setShowEventForm(false)} />
 
       {/* QR Code Modal */}
       {qrData && (
