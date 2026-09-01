@@ -162,8 +162,17 @@ const DJLogin: React.FC = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {!isLogin && (
+                {!isLogin ? (
                   <p className="mt-1.5 text-[13px] text-bone-faint">Almeno 6 caratteri.</p>
+                ) : (
+                  <div className="mt-2 text-right">
+                    <Link
+                      to="/dj/forgot-password"
+                      className="text-[13px] text-bone-dim hover:text-bone transition-colors"
+                    >
+                      Password dimenticata?
+                    </Link>
+                  </div>
                 )}
               </div>
 

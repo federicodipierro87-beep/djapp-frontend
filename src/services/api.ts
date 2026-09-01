@@ -79,6 +79,18 @@ export const authApi = {
     const response = await api.get('/auth/me');
     return response.data;
   },
+
+  // The answer is the same whether or not the address is registered, so there
+  // is nothing here to tell the two apart with.
+  forgotPassword: async (data: { email: string }): Promise<{ message: string }> => {
+    const response = await api.post('/auth/forgot-password', data);
+    return response.data;
+  },
+
+  resetPassword: async (data: { token: string; password: string }): Promise<{ message: string }> => {
+    const response = await api.post('/auth/reset-password', data);
+    return response.data;
+  },
 };
 
 // Requests API
@@ -179,7 +191,11 @@ export const djApi = {
     return response.data;
   },
 
-  changePassword: async (data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> => {
+  // Changing the password invalidates every token issued before it, this
+  // session's included, so the server hands back a replacement to store.
+  changePassword: async (
+    data: { currentPassword: string; newPassword: string }
+  ): Promise<{ message: string; token: string }> => {
     const response = await api.post('/dj/change-password', data);
     return response.data;
   },

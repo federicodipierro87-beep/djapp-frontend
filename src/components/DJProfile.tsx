@@ -90,6 +90,11 @@ const DJProfile: React.FC<DJProfileProps> = ({ dj }) => {
   const passwordMutation = useMutation({
     mutationFn: djApi.changePassword,
     onSuccess: (data) => {
+      // The token in hand was issued before the password changed, so the server
+      // no longer accepts it. Without swapping it the next request would answer
+      // 401 and bounce the DJ to the login page, one moment after being told
+      // the change worked.
+      localStorage.setItem('dj_token', data.token);
       toast.success(data.message);
       setPasswordData({
         currentPassword: '',

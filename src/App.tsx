@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Event from './pages/Event';
 import DiscoverEvents from './pages/DiscoverEvents';
 import DJLogin from './pages/DJLogin';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import DJPanel from './pages/DJPanel';
 import AdminDashboard from './pages/AdminDashboard';
 import Subscription from './pages/Subscription';
@@ -25,6 +27,10 @@ function App() {
         <Route path="/payment/return" element={<PaymentReturn />} />
         <Route path="/payment/cancelled" element={<PaymentReturn cancelled />} />
         <Route path="/dj/login" element={<DJLogin />} />
+        <Route path="/dj/forgot-password" element={<ForgotPassword />} />
+        {/* Il token sta nel percorso e non nella query: è quello che il server
+            costruisce nel link dell'email. */}
+        <Route path="/dj/reset-password/:token" element={<ResetPassword />} />
         <Route path="/dj/panel" element={<DJPanel />} />
         <Route path="/dj/subscription" element={<Subscription />} />
         <Route path="/dj/subscription/success" element={<SubscriptionSuccess />} />
