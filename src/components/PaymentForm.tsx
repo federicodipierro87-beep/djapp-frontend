@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
-import { useElements, useStripe, CardElement } from '@stripe/react-stripe-js';
-import { Smartphone } from 'lucide-react';
+import {
+  useElements,
+  useStripe,
+  CardElement,
+  ExpressCheckoutElement
+} from '@stripe/react-stripe-js';
+import type { StripeExpressCheckoutElementConfirmEvent } from '@stripe/stripe-js';
 import Button from './ui/Button';
 import Label from './ui/Label';
 import { formatMoney } from './ui/format';
@@ -24,6 +29,13 @@ const CARD_ELEMENT_STYLE = {
   },
 };
 
+// Which wallet each method maps to inside the Express Checkout Element, and what
+// to call it when it turns out the browser cannot offer it.
+const WALLETS = {
+  APPLE_PAY: { key: 'applePay', name: 'Apple Pay' },
+  GOOGLE_PAY: { key: 'googlePay', name: 'Google Pay' }
+} as const;
+
 interface PaymentFormProps {
   amount: number;
   paymentMethod: PaymentMethod;
@@ -31,6 +43,13 @@ interface PaymentFormProps {
   // longer creates its own intent: an authorisation that is not tied to a
   // request is money nobody can collect.
   clientSecret: string;
+  // Only needed to build the return address for a wallet that has to leave the
+  // page for 3-D Secure.
+  requestId: string;
+  // Decided by the parent, because it is what the Elements group was built for.
+  // False on a wallet method means the browser turned out not to support it.
+  useWallet: boolean;
+  onWalletUnavailable: () => void;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -39,16 +58,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   amount,
   paymentMethod,
   clientSecret,
+  requestId,
+  useWallet,
+  onWalletUnavailable,
   onSuccess,
   onCancel
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [walletReady, setWalletReady] = useState(false);
 
   const stripe = useStripe();
   const elements = useElements();
 
-  const authorize = async (billingName?: string) => {
+  const wallet =
+    paymentMethod === 'APPLE_PAY' || paymentMethod === 'GOOGLE_PAY'
+      ? WALLETS[paymentMethod]
+      : null;
+
+  const authorize = async () => {
     if (!stripe || !elements) {
       setPaymentError('Stripe non è stato caricato');
       return;
@@ -64,10 +92,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       }
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          ...(billingName ? { billing_details: { name: billingName } } : {})
-        }
+        payment_method: { card: cardElement }
       });
 
       if (error) {
@@ -86,51 +111,118 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   };
 
-  const renderPaymentInterface = () => {
-    switch (paymentMethod) {
-      case 'CARD':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="card-element" className="field-label">
-                Dati della carta
-              </label>
-              <div
-                className="bg-ink-800 border border-white/[0.10] rounded-md px-3 py-3.5"
-                role="group"
-                aria-label="Informazioni pagamento carta"
-              >
-                <CardElement options={{ style: CARD_ELEMENT_STYLE, hidePostalCode: false }} />
-              </div>
-            </div>
-
-            <Button
-              block
-              onClick={() => authorize()}
-              disabled={isProcessing || !stripe}
-              aria-describedby="payment-info"
-            >
-              {isProcessing ? 'Elaborazione…' : `Autorizza ${formatMoney(amount, true)}`}
-            </Button>
-          </div>
-        );
-
-      case 'APPLE_PAY':
-      case 'GOOGLE_PAY':
-        return (
-          <Button block onClick={() => authorize('Customer')} disabled={isProcessing || !stripe}>
-            <Smartphone className="h-4 w-4" />
-            {isProcessing
-              ? 'Elaborazione…'
-              : `Paga con ${paymentMethod === 'APPLE_PAY' ? 'Apple Pay' : 'Google Pay'}`}
-          </Button>
-        );
-
-      // PayPal and Satispay never reach this form: both send the guest away to
-      // their own page and bring them back to /payment/return.
-      default:
-        return null;
+  // The wallet sheet has already collected the payment method by the time this
+  // runs; confirming is all that is left.
+  const confirmWallet = async (event: StripeExpressCheckoutElementConfirmEvent) => {
+    if (!stripe || !elements) {
+      setPaymentError('Stripe non è stato caricato');
+      event.paymentFailed();
+      return;
     }
+
+    setPaymentError(null);
+
+    // This group was built with the client secret, so which intent to confirm is
+    // implied. `if_required` keeps the guest on this page when the wallet needs
+    // no redirect, and still sends them to the return page if 3-D Secure does -
+    // that page confirms by request id, whatever the provider was.
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment/return?requestId=${requestId}`
+      },
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      setPaymentError(error.message || 'Pagamento non riuscito');
+      event.paymentFailed();
+      return;
+    }
+
+    if (paymentIntent?.status === 'requires_capture') {
+      onSuccess();
+      return;
+    }
+
+    setPaymentError('Il pagamento non è stato autorizzato');
+    event.paymentFailed();
+  };
+
+  const renderPaymentInterface = () => {
+    if (useWallet && wallet) {
+      return (
+        <>
+          <ExpressCheckoutElement
+            options={{
+              // Only the wallet the guest asked for. Left to itself the element
+              // would offer whatever else the browser has, which is not what was
+              // picked on the previous screen.
+              wallets: {
+                applePay: wallet.key === 'applePay' ? 'always' : 'never',
+                googlePay: wallet.key === 'googlePay' ? 'always' : 'never'
+              },
+              buttonType: { applePay: 'tip', googlePay: 'donate' },
+              buttonTheme: { applePay: 'white', googlePay: 'white' },
+              buttonHeight: 48
+            }}
+            // `availablePaymentMethods` is undefined when nothing can be shown.
+            // Noticing that is the whole point: the button this replaced
+            // promised a wallet without ever asking whether it existed.
+            onReady={({ availablePaymentMethods }) => {
+              if (availablePaymentMethods?.[wallet.key]) setWalletReady(true);
+              else onWalletUnavailable();
+            }}
+            onLoadError={onWalletUnavailable}
+            onConfirm={confirmWallet}
+          />
+
+          {!walletReady && (
+            <p className="text-[13px] text-bone-dim">Caricamento di {wallet.name}…</p>
+          )}
+        </>
+      );
+    }
+
+    // PayPal and Satispay never reach this form: both send the guest away to
+    // their own page and bring them back to /payment/return.
+    if (paymentMethod !== 'CARD' && !wallet) return null;
+
+    return (
+      <div className="space-y-4">
+        {wallet && (
+          <div className="border-l-2 border-warn pl-4 py-1">
+            <Label as="div">Non disponibile qui</Label>
+            <p className="mt-1.5 text-[13px] text-bone-dim text-pretty">
+              {wallet.name} non è attivo su questo browser. Puoi autorizzare con la
+              carta: importo e condizioni sono gli stessi.
+            </p>
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="card-element" className="field-label">
+            Dati della carta
+          </label>
+          <div
+            className="bg-ink-800 border border-white/[0.10] rounded-md px-3 py-3.5"
+            role="group"
+            aria-label="Informazioni pagamento carta"
+          >
+            <CardElement options={{ style: CARD_ELEMENT_STYLE, hidePostalCode: false }} />
+          </div>
+        </div>
+
+        <Button
+          block
+          onClick={authorize}
+          disabled={isProcessing || !stripe}
+          aria-describedby="payment-info"
+        >
+          {isProcessing ? 'Elaborazione…' : `Autorizza ${formatMoney(amount, true)}`}
+        </Button>
+      </div>
+    );
   };
 
   return (

@@ -201,6 +201,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             amount={effectiveAmount}
             paymentMethod={pendingPayment.method}
             clientSecret={pendingPayment.clientSecret}
+            requestId={pendingPayment.requestId}
             onSuccess={() => confirmRequestMutation.mutate(pendingPayment.requestId)}
             // Abandoning here leaves an unpaid request behind; the server
             // discards it, and its authorisation, on the next sweep.
