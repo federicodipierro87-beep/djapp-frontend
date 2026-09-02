@@ -5,6 +5,8 @@ import { eventsApi } from '../services/api';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 import Field from './ui/Field';
+import { formatMoney } from './ui/format';
+import { MIN_DONATION } from '../config/payments';
 import type { CreateEventData, DJ, Event } from '../types';
 
 interface EventFormModalProps {
@@ -23,7 +25,7 @@ const emptyForm: CreateEventData = {
   address: '',
   dateTime: '',
   endDateTime: '',
-  minDonation: 0,
+  minDonation: MIN_DONATION,
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -71,7 +73,9 @@ const buildForm = (event: Event | null | undefined, djMinDonation: number): Crea
         address: event.address,
         dateTime: toInputValue(event.dateTime),
         endDateTime: toInputValue(event.endDateTime),
-        minDonation: toAmount(event.minDonation) ?? djMinDonation,
+        // Floored, because an event created during the free-requests window
+        // still stores a zero the server would no longer accept back.
+        minDonation: Math.max(MIN_DONATION, toAmount(event.minDonation) ?? djMinDonation),
       }
     : { ...emptyForm, minDonation: djMinDonation };
 
@@ -82,8 +86,10 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event 
 
   // The DJ panel already has this loaded; reading the cache avoids a second
   // request every time the modal opens.
-  const djMinDonation =
-    toAmount(queryClient.getQueryData<DJ>(['dj-me'])?.minDonation) ?? 0;
+  const djMinDonation = Math.max(
+    MIN_DONATION,
+    toAmount(queryClient.getQueryData<DJ>(['dj-me'])?.minDonation) ?? MIN_DONATION
+  );
 
   const eventRef = useRef(event);
   eventRef.current = event;
@@ -216,17 +222,23 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event 
           label="Mancia minima"
           type="number"
           mono
-          min={0}
+          min={MIN_DONATION}
           max={MAX_MIN_DONATION}
           step={0.5}
-          value={formData.minDonation ?? 0}
+          value={formData.minDonation ?? MIN_DONATION}
           onChange={(e) =>
             setFormData({
               ...formData,
-              minDonation: Math.min(MAX_MIN_DONATION, Math.max(0, Number(e.target.value) || 0)),
+              minDonation: Math.min(
+                MAX_MIN_DONATION,
+                Math.max(MIN_DONATION, Number(e.target.value) || MIN_DONATION)
+              ),
             })
           }
-          hint="Da quanto parte lo slider del pubblico. A 0 le richieste sono gratuite: nessuna schermata di pagamento."
+          hint={`Da quanto parte lo slider del pubblico. Non può scendere sotto ${formatMoney(
+            MIN_DONATION,
+            true
+          )}: i circuiti di pagamento rifiutano gli importi più bassi.`}
         />
       </form>
     </Modal>

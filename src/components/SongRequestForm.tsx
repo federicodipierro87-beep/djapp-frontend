@@ -65,10 +65,11 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const minDonation = eventInfo?.minDonation;
   const effectiveAmount = donationAmount ?? minDonation ?? 0;
 
-  // The DJ set this night's minimum to zero and the guest left it there. There
-  // is nothing to authorise, so there is no payment step and nothing to confirm
-  // afterwards: the request reaches the DJ the moment it is sent.
-  const isFree = minDonation !== undefined && effectiveAmount === 0;
+  // The server decides this: the night may be over, or the DJ may have no way of
+  // seeing the request - not approved yet, or without an active subscription.
+  // Either way the money would be authorised for nothing, so the form does not
+  // open at all rather than failing on the last button.
+  const isClosed = eventInfo !== undefined && !eventInfo.isAcceptingRequests;
 
   const availableMethods = eventInfo?.paymentMethods ?? [];
   // The server lists them in its own order, so the first is the default until
@@ -80,14 +81,6 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
   const createRequestMutation = useMutation({
     mutationFn: (data: CreateRequestData) => requestsApi.create(data),
     onSuccess: (response, variables) => {
-      // No instructions means there was nothing to pay: the server has already
-      // put the request in front of the DJ.
-      if (!response.payment || !variables.paymentMethod) {
-        toast.success('Richiesta inviata. In attesa che il DJ la accetti');
-        onSuccess();
-        return;
-      }
-
       // PayPal and Satispay take over the browser instead of embedding a form.
       // The guest comes back to /payment/return, which is where the request gets
       // confirmed, so there is nothing more to do here.
@@ -139,8 +132,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       return;
     }
 
-    // A payment method is only needed when there is something to charge.
-    if (minDonation === undefined || (!isFree && !paymentMethod)) {
+    if (minDonation === undefined || !paymentMethod) {
       toast.error('Impossibile leggere le impostazioni dell\'evento, riprova');
       return;
     }
@@ -159,7 +151,7 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
       requesterName: formData.requesterName,
       requesterEmail: formData.requesterEmail || undefined,
       donationAmount: effectiveAmount,
-      paymentMethod: isFree ? undefined : paymentMethod
+      paymentMethod
     });
   };
 
@@ -180,6 +172,17 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
         onSelect={handleSpotifySelect}
         onClose={() => setShowSpotifySearch(false)}
       />
+    );
+  }
+
+  if (isClosed) {
+    return (
+      <Modal title="Richieste chiuse" eyebrow={eventCode} size="md" onClose={onClose}>
+        <p className="py-4 text-sm text-bone-dim text-pretty">
+          Questo evento non accetta richieste in questo momento. Se la serata è appena
+          iniziata, riprova fra poco.
+        </p>
+      </Modal>
     );
   }
 
@@ -224,16 +227,12 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
             form="song-request-form"
             className="flex-[2]"
             disabled={
-              createRequestMutation.isPending ||
-              minDonation === undefined ||
-              (!isFree && !paymentMethod)
+              createRequestMutation.isPending || minDonation === undefined || !paymentMethod
             }
           >
             {createRequestMutation.isPending
               ? 'Invio…'
-              : isFree
-                ? 'Invia richiesta'
-                : `Continua · ${formatMoney(effectiveAmount, true)}`}
+              : `Continua · ${formatMoney(effectiveAmount, true)}`}
           </Button>
         </div>
       }
@@ -354,69 +353,55 @@ const SongRequestForm: React.FC<SongRequestFormProps> = ({
           )}
         </section>
 
-        {/* Pagamento: a mancia zero non c'è niente da pagare, quindi la
-            sezione sparisce invece di chiedere una carta per zero euro. */}
-        {!isFree && (
-          <>
-            <hr className="rule" />
+        <hr className="rule" />
 
-            <section>
-              <Label as="div" className="mb-3">
-                Come paghi
-              </Label>
+        <section>
+          <Label as="div" className="mb-3">
+            Come paghi
+          </Label>
 
-              {availableMethods.length === 0 && !eventInfoLoading ? (
-                <p className="text-sm text-bone-dim">
-                  Nessun metodo di pagamento disponibile per questo evento.
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {availableMethods.map((method) => {
-                    const { name, icon: Icon } = METHOD_DETAILS[method];
-                    const selected = paymentMethod === method;
+          {availableMethods.length === 0 && !eventInfoLoading ? (
+            <p className="text-sm text-bone-dim">
+              Nessun metodo di pagamento disponibile per questo evento.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {availableMethods.map((method) => {
+                const { name, icon: Icon } = METHOD_DETAILS[method];
+                const selected = paymentMethod === method;
 
-                    return (
-                      <button
-                        key={method}
-                        type="button"
-                        onClick={() => setChosenMethod(method)}
-                        aria-pressed={selected}
-                        className={`flex flex-col items-center gap-2 py-3 px-2 rounded-md border transition-colors min-h-[68px] ${
-                          selected
-                            ? 'border-bone bg-white/[0.06] text-bone'
-                            : 'border-white/[0.12] text-bone-dim hover:border-white/30 hover:text-bone'
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                        <span className="text-[13px] font-medium">{name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-          </>
-        )}
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setChosenMethod(method)}
+                    aria-pressed={selected}
+                    className={`flex flex-col items-center gap-2 py-3 px-2 rounded-md border transition-colors min-h-[68px] ${
+                      selected
+                        ? 'border-bone bg-white/[0.06] text-bone'
+                        : 'border-white/[0.12] text-bone-dim hover:border-white/30 hover:text-bone'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-[13px] font-medium">{name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {/* Le condizioni: la cosa che più spesso genera dubbi, quindi in chiaro. */}
         <div className="border-l-2 border-white/15 pl-4 py-1">
-          <Label as="div">{isFree ? 'Come funziona' : 'Come funziona il pagamento'}</Label>
-          {isFree ? (
-            <ul className="mt-2 space-y-1.5 text-[13px] text-bone-dim text-pretty">
-              <li>Nessun pagamento: la richiesta è gratuita.</li>
-              <li>Il DJ la vede subito e decide se accettarla.</li>
-              <li>Se preferisci farti notare, alza la mancia qui sopra.</li>
-            </ul>
-          ) : (
-            <ul className="mt-2 space-y-1.5 text-[13px] text-bone-dim text-pretty">
-              <li>L'importo viene autorizzato ora, ma addebitato solo se il DJ accetta.</li>
-              <li>Se rifiuta, non paghi nulla.</li>
-              <li>
-                Se non risponde, l'autorizzazione decade entro 12 ore — subito, se la serata
-                finisce prima.
-              </li>
-            </ul>
-          )}
+          <Label as="div">Come funziona il pagamento</Label>
+          <ul className="mt-2 space-y-1.5 text-[13px] text-bone-dim text-pretty">
+            <li>L'importo viene autorizzato ora, ma addebitato solo se il DJ accetta.</li>
+            <li>Se rifiuta, non paghi nulla.</li>
+            <li>
+              Se non risponde, l'autorizzazione decade entro 12 ore — subito, se la serata
+              finisce prima.
+            </li>
+          </ul>
         </div>
       </form>
     </Modal>

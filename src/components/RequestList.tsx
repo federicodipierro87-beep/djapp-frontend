@@ -120,7 +120,8 @@ const RequestList: React.FC<RequestListProps> = ({ requests, onUpdate }) => {
                   </>
                 )}
                 <span className="text-bone-faint">·</span>
-                {/* Senza metodo di pagamento non c'era nulla da pagare. */}
+                {/* Nessuna richiesta nasce più senza metodo: restano solo quelle
+                    della finestra in cui le gratuite erano attive. */}
                 <span>
                   {request.paymentMethod
                     ? PAYMENT_LABELS[request.paymentMethod] ?? request.paymentMethod

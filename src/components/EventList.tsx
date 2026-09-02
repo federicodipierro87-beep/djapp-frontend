@@ -214,7 +214,7 @@ const EventList: React.FC = () => {
                             metà di ciò che il pubblico incontra. */}
                         {minDonation !== undefined && (
                           <span className="num ml-2 text-[11px] text-bone-faint">
-                            {minDonation === 0 ? 'gratis' : `min ${formatMoney(minDonation, true)}`}
+                            min {formatMoney(minDonation, true)}
                           </span>
                         )}
                       </div>

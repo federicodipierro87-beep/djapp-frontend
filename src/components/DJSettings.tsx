@@ -10,6 +10,7 @@ import Label from './ui/Label';
 import StatusDot from './ui/StatusDot';
 import EmptyState from './ui/EmptyState';
 import { formatMoney } from './ui/format';
+import { MIN_DONATION } from '../config/payments';
 import type { DJ, EventSummary } from '../types';
 
 interface DJSettingsProps {
@@ -270,8 +271,10 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.minDonation < 0.01 || formData.minDonation > 1000) {
-      toast.error('La donazione minima deve essere fra 0,01 € e 1000 €');
+    if (formData.minDonation < MIN_DONATION || formData.minDonation > 1000) {
+      toast.error(
+        `La donazione minima deve essere fra ${formatMoney(MIN_DONATION, true)} e ${formatMoney(1000, true)}`
+      );
       return;
     }
 
@@ -417,13 +420,16 @@ const DJSettings: React.FC<DJSettingsProps> = ({ dj, onUpdate }) => {
             <Field
               label="Donazione minima (€)"
               type="number"
-              min="0.01"
+              min={MIN_DONATION}
               max="1000"
-              step="0.01"
+              step="0.5"
               mono
               value={formData.minDonation}
               onChange={(e) => setFormData({ ...formData, minDonation: Number(e.target.value) })}
-              hint="Sotto questa cifra la richiesta non parte."
+              hint={`Sotto questa cifra la richiesta non parte. Il minimo assoluto è ${formatMoney(
+                MIN_DONATION,
+                true
+              )}: i circuiti di pagamento rifiutano gli importi più bassi.`}
               required
             />
           </div>
