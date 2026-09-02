@@ -120,7 +120,12 @@ const RequestList: React.FC<RequestListProps> = ({ requests, onUpdate }) => {
                   </>
                 )}
                 <span className="text-bone-faint">·</span>
-                <span>{PAYMENT_LABELS[request.paymentMethod] ?? request.paymentMethod}</span>
+                {/* Senza metodo di pagamento non c'era nulla da pagare. */}
+                <span>
+                  {request.paymentMethod
+                    ? PAYMENT_LABELS[request.paymentMethod] ?? request.paymentMethod
+                    : 'Gratis'}
+                </span>
               </div>
 
               <div className="mt-4 pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">

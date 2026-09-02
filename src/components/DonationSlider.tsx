@@ -21,13 +21,20 @@ const DonationSlider: React.FC<DonationSliderProps> = ({ amount, onChange, min, 
     <div>
       <div className="flex items-baseline justify-between">
         <Label as="div">Mancia</Label>
-        <span className="num text-[11px] text-bone-faint">min {formatMoney(min, true)}</span>
+        <span className="num text-[11px] text-bone-faint">
+          {min === 0 ? 'facoltativa' : `min ${formatMoney(min, true)}`}
+        </span>
       </div>
 
       {/* L'importo è il numero più grande della schermata: è la decisione. */}
       <div className="mt-3 flex items-baseline gap-2">
         <span className="num text-4xl font-semibold leading-none">{formatMoney(amount, true)}</span>
-        {amount === min && <span className="label-mono">importo minimo</span>}
+        {/* A zero non c'è nessun minimo da annunciare: c'è che non si paga. */}
+        {amount === 0 ? (
+          <span className="label-mono">gratis</span>
+        ) : (
+          amount === min && <span className="label-mono">importo minimo</span>
+        )}
       </div>
 
       <div className="mt-5">

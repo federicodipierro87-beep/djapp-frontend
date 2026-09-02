@@ -8,6 +8,7 @@ import Button from './ui/Button';
 import Label from './ui/Label';
 import StatusDot from './ui/StatusDot';
 import EmptyState from './ui/EmptyState';
+import { formatMoney } from './ui/format';
 import type { BadgeTone } from './ui/Badge';
 import type { Event, EventStatus } from '../types';
 import EventFormModal from './EventFormModal';
@@ -150,6 +151,13 @@ const EventList: React.FC = () => {
           <div className="space-y-3">
             {events.map((event) => {
               const status = STATUS[event.status];
+              // Prisma serialises Decimal as a string and this endpoint does not
+              // convert it. Undefined means the event never set one and still
+              // runs on the DJ's profile minimum, which is not shown here.
+              const minDonation =
+                event.minDonation === null || event.minDonation === undefined
+                  ? undefined
+                  : Number(event.minDonation);
               return (
                 <Surface key={event.id}>
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -201,6 +209,14 @@ const EventList: React.FC = () => {
                         >
                           <Link2 className="h-4 w-4" />
                         </button>
+
+                        {/* Il minimo sta accanto al codice perché è l'altra
+                            metà di ciò che il pubblico incontra. */}
+                        {minDonation !== undefined && (
+                          <span className="num ml-2 text-[11px] text-bone-faint">
+                            {minDonation === 0 ? 'gratis' : `min ${formatMoney(minDonation, true)}`}
+                          </span>
+                        )}
                       </div>
                     </div>
 

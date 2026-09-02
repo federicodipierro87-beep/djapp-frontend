@@ -5,7 +5,7 @@ import { eventsApi } from '../services/api';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 import Field from './ui/Field';
-import type { CreateEventData, Event } from '../types';
+import type { CreateEventData, DJ, Event } from '../types';
 
 interface EventFormModalProps {
   isOpen: boolean;
@@ -14,12 +14,16 @@ interface EventFormModalProps {
   event?: Event | null;
 }
 
+/** The tip a night asks for at most, matching the top of the guests' slider. */
+const MAX_MIN_DONATION = 100;
+
 const emptyForm: CreateEventData = {
   name: '',
   description: '',
   address: '',
   dateTime: '',
   endDateTime: '',
+  minDonation: 0,
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -47,7 +51,19 @@ const toInputValue = (iso?: string): string => {
  */
 const toInstant = (inputValue: string): string => new Date(inputValue).toISOString();
 
-const buildForm = (event?: Event | null): CreateEventData =>
+/**
+ * Prisma serialises Decimal as a string, and neither GET /events/my nor
+ * authApi.me converts it. Left alone, a "5" would land in a numeric input and
+ * every later comparison would be between strings.
+ */
+const toAmount = (value: number | string | null | undefined): number | undefined =>
+  value === null || value === undefined || value === '' ? undefined : Number(value);
+
+/**
+ * An event with no minimum of its own is one created before the field existed:
+ * it still runs on the DJ's profile minimum, so that is what the form shows.
+ */
+const buildForm = (event: Event | null | undefined, djMinDonation: number): CreateEventData =>
   event
     ? {
         name: event.name,
@@ -55,19 +71,28 @@ const buildForm = (event?: Event | null): CreateEventData =>
         address: event.address,
         dateTime: toInputValue(event.dateTime),
         endDateTime: toInputValue(event.endDateTime),
+        minDonation: toAmount(event.minDonation) ?? djMinDonation,
       }
-    : { ...emptyForm };
+    : { ...emptyForm, minDonation: djMinDonation };
 
 const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event }) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<CreateEventData>(emptyForm);
   const isEdit = Boolean(event);
 
+  // The DJ panel already has this loaded; reading the cache avoids a second
+  // request every time the modal opens.
+  const djMinDonation =
+    toAmount(queryClient.getQueryData<DJ>(['dj-me'])?.minDonation) ?? 0;
+
   const eventRef = useRef(event);
   eventRef.current = event;
 
+  const defaultsRef = useRef(djMinDonation);
+  defaultsRef.current = djMinDonation;
+
   useEffect(() => {
-    if (isOpen) setFormData(buildForm(eventRef.current));
+    if (isOpen) setFormData(buildForm(eventRef.current, defaultsRef.current));
     // Keyed on the id rather than the event object: refetching my-events hands
     // back a new object every time, which would wipe whatever is being typed.
   }, [isOpen, event?.id]);
@@ -186,6 +211,23 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, event 
             onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
           />
         </div>
+
+        <Field
+          label="Mancia minima"
+          type="number"
+          mono
+          min={0}
+          max={MAX_MIN_DONATION}
+          step={0.5}
+          value={formData.minDonation ?? 0}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              minDonation: Math.min(MAX_MIN_DONATION, Math.max(0, Number(e.target.value) || 0)),
+            })
+          }
+          hint="Da quanto parte lo slider del pubblico. A 0 le richieste sono gratuite: nessuna schermata di pagamento."
+        />
       </form>
     </Modal>
   );

@@ -43,7 +43,8 @@ export interface Request {
   requesterName: string;
   requesterEmail?: string;
   donationAmount: number;
-  paymentMethod: PaymentMethod;
+  /** Null on a free request: there was no payment to make. */
+  paymentMethod: PaymentMethod | null;
   paymentIntentId?: string;
   status: RequestStatus;
   timeRemaining: number;
@@ -116,7 +117,8 @@ export interface CreateRequestData {
   requesterName: string;
   requesterEmail?: string;
   donationAmount: number;
-  paymentMethod: PaymentMethod;
+  /** Omitted when the donation is zero: there is nothing to pay with. */
+  paymentMethod?: PaymentMethod;
 }
 
 // How the guest is told to pay for the request the server has just created.
@@ -128,11 +130,13 @@ export interface PaymentInstructions {
   redirectUrl: string | null;
 }
 
-// The request exists but is invisible to the DJ until the payment is confirmed.
+// A paid request is invisible to the DJ until its payment is confirmed, so it
+// comes back AWAITING_PAYMENT with instructions. A free one has nothing to
+// confirm: it is already PENDING and there are no instructions to give.
 export interface CreateRequestResponse {
   requestId: string;
-  status: 'AWAITING_PAYMENT';
-  payment: PaymentInstructions;
+  status: 'AWAITING_PAYMENT' | 'PENDING';
+  payment: PaymentInstructions | null;
   expiresAt: string;
   createdAt: string;
 }
@@ -202,6 +206,12 @@ export interface Event {
   longitude: number;
   dateTime: string;
   endDateTime?: string;
+  /**
+   * The minimum tip for this night, zero meaning the guests may ask for free.
+   * Null on events created before the field existed: those keep using the DJ's
+   * own minimum. Prisma serialises Decimal as a string, so read it with Number.
+   */
+  minDonation?: number | string | null;
   status: EventStatus;
   createdAt: string;
   updatedAt: string;
@@ -236,6 +246,8 @@ export interface CreateEventData {
   address: string;
   dateTime: string;
   endDateTime?: string | null;
+  /** Zero opens the night to free requests. */
+  minDonation?: number;
 }
 
 export interface UpdateEventData {
@@ -245,4 +257,5 @@ export interface UpdateEventData {
   dateTime?: string;
   /** null clears the stored end date; omitting it leaves the current one. */
   endDateTime?: string | null;
+  minDonation?: number;
 }
